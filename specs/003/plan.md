@@ -153,7 +153,10 @@ Framework de pruebas: Jest con TypeScript (`jest-expo`), ejecutado con `npx jest
 - **Problema a resolver:** Garantizar la tenencia, archivo seguro y persistencia ininterrumpida de las fotografías tomadas en el almacenamiento interno duradero de la aplicación en el dispositivo, evitando que el sistema operativo purgue las imágenes de carpetas de caché temporal durante jornadas de varios días sin conexión hasta su futura transmisión remota (RF-12, RF-13; RNF-1, RNF-2, RNF-3).
 - **Capacidades requeridas:** Acceso seguro al sistema de archivos local de la aplicación (directorio de documentos permanentes); capacidad de copiar o mover archivos de imágenes desde ubicaciones temporales a rutas protegidas permanentes con nombres unívocos vinculados al código de medidor y fecha; capacidad de lectura y eliminación atómica de archivos huérfanos cuando el usuario descarta un borrador o sustituye una fotografía; compatibilidad con el entorno de ejecución móvil y pruebas unitarias.
 - **Requisitos trazados:** RF-12, RF-13, RF-15; RNF-1, RNF-2, RNF-3.
+- **Se va a utilizar:** `expo-file-system` mediante el servicio `src/services/photo/photoStorageService.ts`.
+- **Trazabilidad:** Resuelto en docs/adr/ADR-006-expo-file-system-fotos.md.
+- **Comando de instalación:** `npx expo install expo-file-system`
 
 ---
 
-*Estado del Plan: Pendiente de resolución de Decisiones ADR antes de iniciar la implementación.*
+*Estado del Plan: Aprobado (todas las Decisiones ADR resueltas formalmente en docs/adr/). Listo para iniciar la implementación.*

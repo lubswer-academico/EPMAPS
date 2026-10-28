@@ -2,18 +2,21 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas.
 
 ## Estado actual
-- Fase: Planificación Técnica y Tareas de Spec 003 (`sdd-plan`) COMPLETADA.
-- Artefactos: [specs/003/plan.md](file:///C:/Users/usuario/Desktop/Movil/prueba1/EPMAPS/specs/003/plan.md) y [specs/003/tasks.md](file:///C:/Users/usuario/Desktop/Movil/prueba1/EPMAPS/specs/003/tasks.md) generados.
-- Suite automatizada base: 43/43 pruebas unitarias pasando en verde (`npx jest`) y chequeo de tipos limpio (`npx tsc --noEmit`).
+- Fase: Decisiones ADR (`sdd-adr`) de Spec 003 culminada con éxito.
+- Documentos generados: [docs/adr/ADR-005-expo-image-picker-camara.md](file:///C:/Users/usuario/Desktop/Movil/prueba1/EPMAPS/docs/adr/ADR-005-expo-image-picker-camara.md) y [docs/adr/ADR-006-expo-file-system-fotos.md](file:///C:/Users/usuario/Desktop/Movil/prueba1/EPMAPS/docs/adr/ADR-006-expo-file-system-fotos.md).
+- [plan.md](file:///C:/Users/usuario/Desktop/Movil/prueba1/EPMAPS/specs/003/plan.md) pasa a `Estado del Plan: Aprobado`.
+- [tasks.md](file:///C:/Users/usuario/Desktop/Movil/prueba1/EPMAPS/specs/003/tasks.md) listo con 5 tareas atómicas trazadas.
 
 ## Decisiones (y por qué)
 - Spec 001: AsyncStorage (ADR-001), NetInfo (ADR-002) y Jest-Expo (ADR-003).
-- Spec 002 (ADR-004): `axios` como cliente HTTP oficial para consultas GET y sincronización futura.
-- Spec 003: Arquitectura modular directa (`src/domain/reading/`, `src/storage/reading/`, `src/services/photo/`, `src/presentation/reading/`). Persistencia de borradores en caliente con AsyncStorage. Declaradas 2 necesidades ADR agnósticas (ADR-REQ-01 y ADR-REQ-02) pendientes de resolución técnica.
+- Spec 002 (ADR-004): `axios` como cliente HTTP oficial.
+- Spec 003 (ADR-005): `expo-image-picker` para cámara nativa con flash/antorcha integrado para medidores oscuros.
+- Spec 003 (ADR-006): `expo-file-system` para persistir fotos duraderas en `documentDirectory` sin saturar AsyncStorage.
 
 ## Aprendizajes y errores a evitar
-- Respetar el blindaje de fronteras: edición de cola en HU-004; sincronización masiva y subida externa de fotos en HU-005.
-- Punto 6 de sdd-plan: Nunca nombrar librerías npm antes de resolver el ADR formal. Dejar el plan en estado pendiente de resolución ADR.
+- Instalar `@react-native/jest-preset@0.86.3` para paridad con react-native 0.86.3 y jest-expo en Expo 57.
+- Recordar al usuario completar la sección `## Uso de IA` en cada ADR para su defensa técnica.
+- Mantener diseño en obra blanca funcional sin sobrecargar estilos hasta tener el flujo completo.
 
 ## Próximos pasos
-- Ejecutar el subagente `/sdd-adr 003` para debatir y resolver formalmente ADR-REQ-01 (cámara) y ADR-REQ-02 (archivos de imagen locales).
+- Solicitar autorización de instalación de `expo-image-picker` y `expo-file-system`, y ejecutar `/sdd-implement 003` (subagente `sdd-implement`) para implementar las tareas T1 a T5 bajo TDD estricto en obra blanca.
