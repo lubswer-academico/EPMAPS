@@ -142,6 +142,9 @@ Framework de pruebas: Jest con soporte de TypeScript.
 - **Problema a resolver:** Detectar de manera proactiva y continua si el dispositivo móvil se encuentra conectado a una red o sin señal, emitiendo eventos de cambio instantáneos para reflejar el estado actual en la barra de estado global en tiempo real (RF-5, RF-7, RNF-4).
 - **Capacidades requeridas:** API de consulta de conectividad actual y suscripción a eventos de cambio de red (online/offline) nativos del sistema operativo móvil, con baja latencia y sin bloquear el hilo principal.
 - **Requisitos trazados:** RF-5, RF-7; RNF-1, RNF-4.
+- **Se va a utilizar:** `@react-native-community/netinfo` a través de la interfaz `INetworkStatusService`.
+- **Trazabilidad:** Resuelto en docs/adr/ADR-002-netinfo-conectividad.md.
+- **Comando de instalación:** `npx expo install @react-native-community/netinfo`
 
 ### ADR-REQ-03: Arnés de ejecución y aserciones para pruebas automatizadas unitarias
 - **Problema a resolver:** Ejecutar de forma automatizada las pruebas unitarias de lógica pura y contratos de persistencia con soporte para TypeScript, garantizando la cobertura de los requisitos funcionales antes de iniciar la implementación (TDD) (Constitución P4, AGENTS.md).
