@@ -14,6 +14,7 @@ export interface UseGlobalStatusControllerResult {
   isOnline: boolean;
   connectionLabel: ConnectionStatus;
   pendingLabel: string;
+  pendingCount: number;
 }
 
 export function useGlobalStatusController(): UseGlobalStatusControllerResult {
@@ -65,5 +66,6 @@ export function useGlobalStatusController(): UseGlobalStatusControllerResult {
     isOnline,
     connectionLabel,
     pendingLabel,
+    pendingCount,
   };
 }

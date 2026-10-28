@@ -97,3 +97,41 @@ Documento de transferencia visual y funcional generado por el agente de implemen
 | **Código del Técnico** | `home.tsx` | `technician.employeeCode` | `"Código: TEC-001"` o `"Código: ---"` fallback |
 | **Título Institucional** | `login.tsx` | Siglas de la empresa | `"EPMAPS"` (28pt, negrita, `#0D47A1`) |
 | **Subtítulo del Módulo** | `login.tsx` | Nombre del módulo | `"Toma de Lecturas en Campo"` (16pt, `#555555`) |
+
+---
+
+## 5. Estilo y Diseño Aplicado
+
+- **Paleta y Tokens Asignados (`src/constants/theme.ts`):**
+  - `--epmaps-primary-dark` (`#153268`): Encabezados corporativos, fondo de botón principal de búsqueda en Home, texto de títulos y logotipo.
+  - `--epmaps-primary` (`#2D72C0`): Botón primario "Iniciar Turno", icono institucional en círculo y acentos interactivos.
+  - `--epmaps-accent-dark` (`#3B766C`): Variante oscurecida de alto contraste para textos de acento sobre fondos claros (ratio 5.26:1 WCAG AA) en insignias y notas de sesión.
+  - `--epmaps-surface` (`#FFFFFF`): Fondo de tarjetas elevadas (`formContainer`, `card`, `GlobalStatusBar`).
+  - `--epmaps-bg-light` (`#F8FAFC`): Fondo principal de pantalla y cajas informativas neutras.
+  - `--epmaps-bg-blue` (`#E1F2FB`): Contenedores informativos de catálogo offline y píldora de turno activo / pendientes.
+  - Estados semánticos de conectividad y alerta:
+    - En línea: Fondo `#E8F5E9`, borde `#A5D6A7`, punto y texto `#2E7D32`.
+    - Sin señal: Fondo `#FFEBEE`, borde `#FFCDD2`, punto y texto `#C62828`.
+    - Cierre de turno: Fondo suave `#FEF2F2`, borde `#FCA5A5`, texto `#C62828`.
+
+- **Tipografía y Jerarquía (`design-taste-frontend`):**
+  - Títulos principales en 28 pt con peso 800 y tracking de 1.5 pt para presencia oficial.
+  - Subtítulos institucionales y badges ("AGUA DE QUITO", "TURNO ACTIVO") en 11-12 pt con peso 700 y espaciado expandido (letterSpacing 0.5-1.2 pt).
+  - Etiquetas de formulario en 11 pt, mayúsculas, peso 700 y color institucional `#153268`.
+  - Nombres y datos operativos destacados en 20-22 pt con peso 800.
+  - Cero tipografías decorativas o gradientes; diseño sobrio de herramienta de trabajo gubernamental de alto rendimiento.
+
+- **Márgenes, Radios y Espaciado (`emil-design-eng`):**
+  - Objetivos táctiles mínimos garantizados de 48 pt a 52 pt en todos los botones interactivos e inputs de texto (`minHeight: 48` / `minHeight: 52`).
+  - Ritmo vertical consistente: espaciado estándar de 20 pt de padding en pantallas (`EPMAPS_SPACING.xl`), 16 pt interno en tarjetas y 24 pt de separación de secciones.
+  - Radios de curvatura coherentes: 12 pt en tarjetas contenedor (`EPMAPS_RADII.lg`), 8 pt en botones y campos (`EPMAPS_RADII.md`), y píldoras completas en badges (`EPMAPS_RADII.full`).
+
+- **Estados Interactivos:**
+  - Reposo: Bordes nítidos (`#CBD5E1` / `#E2E8F0`) con sombras ambientales sutiles (`elevation: 2`, `shadowOpacity: 0.05`).
+  - Pulsación: Respuesta táctil inmediata con `activeOpacity={0.85}` en todos los botones (`TouchableOpacity`).
+  - Deshabilitado / En envío: Botón "Iniciar Turno" adquiere fondo atenuado (`#93C5FD`) y renderiza `ActivityIndicator` blanco mientras valida el catálogo.
+
+- **Decisiones Estéticas Clave:**
+  - Se estructuró la cabecera de `GlobalStatusBar` como una franja limpia con píldoras de alto contraste en los extremos y marca corporativa central, garantizando visibilidad bajo luz solar directa sin interferir con la navegación.
+  - La tarjeta de técnico en `Home` expone el estado de turno y el código institucional mediante badges sobrios, priorizando jerárquicamente la acción primaria de "Buscar Medidor" sobre el cierre de turno.
+

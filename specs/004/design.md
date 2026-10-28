@@ -101,3 +101,43 @@ Este documento define la estructura y elementos funcionales de las vistas en **o
 - **Lectura numérica:** Entero o decimal formateado con sufijo `m³` (ej. `145 m³`).
 - **Consumo calculado:** Formateado con sufijo `m³` o etiqueta explicativa `Pendiente de verificar (modo contingencia sin datos previos)`.
 - **Fechas y horas:** Formato localizado `es-EC` (DD/MM/AAAA, HH:MM).
+
+---
+
+## 5. Estilo y Diseño Aplicado (Fase 2 - Contrato Visual Definitivo)
+
+- **Paleta y Tokens Asignados (`src/constants/theme.ts`):**
+  - `--epmaps-primary-dark` (`#153268`): Títulos principales ("Bandeja de Lecturas", "Detalle de Lectura"), títulos de secciones ("Información del Registro", "Fotografía Adjunta"), pestaña de filtro activa (`tabButtonActive`), códigos de medidor (`meterCode`), botón de retorno (`backButtonText`) y valores numéricos tabulares (`tabularValue`).
+  - `--epmaps-primary` (`#2D72C0`): Botón principal de acción `"Editar Lectura"` (`editButton`) en `reading-detail.tsx` e indicadores de carga (`ActivityIndicator`).
+  - `--epmaps-accent-dark` (`#3B766C`): Píldoras superiores de conteo y medidor (`countPill`, `meterPill`), etiquetas de categoría de tarjeta (`FICHA DE REGISTRO • AUDITORÍA`, `EVIDENCIA VISUAL • RESPALDO`) e indicador de evidencia fotográfica confirmada (`evidenceHighlightText` con ratio 5.26:1 WCAG AA sobre blanco).
+  - `--epmaps-surface` (`#FFFFFF`): Tarjetas de lectura en bandeja (`card`), bloques de detalle (`reading-detail.tsx`) y pestañas de filtro en estado inactivo (`tabButton`).
+  - `--epmaps-bg-light` (`#F8FAFC`): Fondo general de pantalla (`safeArea`) y contenedor informativo sin fotografía (`noPhotoBox`).
+  - `--epmaps-bg-blue` (`#E1F2FB`): Cápsula del botón de retroceso (`backButtonBadge`), píldora de conteo de registros (`countPill`), píldora del código de medidor (`meterPill`) y círculo central del estado vacío (`emptyIconCircle`).
+  - Tokens de Estados Operativos de Cola (WCAG 2.1 AA $\ge 4.5:1$ bajo luz solar directa):
+    - **Pendiente de verificar (`PENDING_VERIFICATION`):** Fondo `verificationBg` (`#EDE7F6`), borde `verificationBorder` (`#D1C4E9`), texto e icono `shield-half-outline` en `verification` (`#4527A0`, contraste 8.62:1).
+    - **Pendiente de enviar (`PENDING_SYNC`):** Fondo `pendingSyncBg` (`#FEF3C7`), borde `pendingSyncBorder` (`#FCD34D`), texto e icono `cloud-upload-outline` en `pendingSync` (`#B45309`, contraste 5.02:1).
+    - **Enviada / Inmutable (`SUBMITTED`):** Fondo `successBg` (`#E8F5E9`), borde `successBorder` (`#A5D6A7`), título e icono `checkmark-circle` / `shield-checkmark` en `success` (`#2E7D32`) y cuerpo explicativo en `successDark` (`#1B5E20`, contraste 7.35:1).
+    - **Acciones destructivas ("Descartar lectura"):** Fondo `dangerSoftBg` (`#FEF2F2`), borde `dangerSoftBorder` (`#FCA5A5`), texto e icono `trash-outline` en `danger` (`#C62828`).
+
+- **Tipografía y Jerarquía (`design-taste-frontend` & `EPMAPS_TYPOGRAPHY`):**
+  - Títulos de pantalla en 22 pt (`EPMAPS_TYPOGRAPHY.sizes.xl`), peso `800` (`extrabold`) y tracking `-0.3 pt`.
+  - Etiquetas de categoría de sección (`FICHA DE REGISTRO • AUDITORÍA`, `EVIDENCIA VISUAL • RESPALDO`) en 11 pt (`xs`), mayúsculas, peso `800` y `letterSpacing: 0.6 pt`.
+  - Código de medidor en tarjeta de bandeja en 18 pt (`lg`), peso `800` y `fontVariant: ['tabular-nums']`.
+  - Cifras tabulares (`tabular-nums`) aplicadas rigurosamente en: contador global de pendientes (`GlobalStatusBar`), píldora de total de registros (`countPillText`), códigos `MED-XXXXXX`, lecturas en `m³`, consumos calculados y marcas de tiempo (`capturedAt`, `updatedAt`, `syncedAt`).
+  - Reemplazo absoluto de emojis por iconografía vectorial de `@expo/vector-icons` (`Ionicons`): `layers-outline`, `time-outline`, `cloud-done-outline`, `speedometer-outline`, `camera`, `camera-outline`, `shield-checkmark`, `create-outline`, `trash-outline` y `file-tray-outline`.
+
+- **Márgenes, Radios y Espaciado (`emil-design-eng`):**
+  - Objetivos táctiles exteriores: mínimo 48 pt (`EPMAPS_TOUCH.minHeight`) en botón de regreso (`backButton`), pestañas de filtro (`tabButton`) y botón de descarte en tarjeta; 52 pt (`EPMAPS_TOUCH.buttonHeight`) en los botones de acción del detalle (`editButton` y `deleteButton`).
+  - Ritmo vertical y espaciado gobernado por `EPMAPS_SPACING`: padding horizontal de 16 pt (`lg`), separación entre tarjetas de 12 pt (`md`), relleno interno de tarjetas de 16 pt (`lg`) y margen inferior de seguridad de 32–40 pt (`hero`).
+  - Radios de curvatura consistentes con `EPMAPS_RADII`: 12 pt (`lg`) en tarjetas principales y banners de estado; 8 pt (`md`) en pestañas de filtro, contenedor de fotografía y botones de acción; 6 pt (`sm`) en insignias de estado operativo y cápsula de retorno; `full` (`9999`) en píldoras de cabecera y círculo de estado vacío.
+
+- **Estados Interactivos:**
+  - **Reposo:** Tarjetas blancas sobre fondo `bgLight` (`#F8FAFC`) delimitadas por bordes `borderLight` (`#E2E8F0`) sin sombras pesadas ni hexadecimales sueltos.
+  - **Pulsación:** Respuesta táctil con `activeOpacity={0.85}` en tarjetas de bandeja, pestañas de filtro y botones de edición/descarte.
+  - **Filtro seleccionado:** Conmutación inmediata a fondo `primaryDark` (`#153268`) con icono y etiqueta en `textInverse` (`#FFFFFF`).
+  - **Inmutabilidad (`SUBMITTED`):** Ocultación total de controles de edición/descarte y despliegue del banner `immutableBanner` con icono `shield-checkmark`.
+
+- **Decisiones Estéticas Clave:**
+  - **Coherencia con el Asistente de Captura (Spec 003):** Se unificó la cabecera (`backButtonBadge` + título + píldora derecha en `bgBlue`) y las etiquetas superiores de categoría en las tarjetas de detalle para que la transición entre captura, bandeja y auditoría se sienta parte de un único sistema institucional.
+  - **Diferenciación Semántica de Evidencia Fotográfica:** En la bandeja de lecturas, los registros con fotografía destacan mediante el icono `camera` y texto en `accentDark` (`#3B766C`), mientras que los registros sin foto se atenúan en `textMuted` con `camera-outline` para facilitar el escaneo visual rápido en terreno.
+

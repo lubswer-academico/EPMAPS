@@ -11,11 +11,19 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { GlobalStatusBar } from '@/components/GlobalStatusBar';
 import { getReadingById, deleteConsolidatedReading } from '@/storage/reading/readingDraftStorage';
 import { deletePhoto } from '@/services/photo/photoStorageService';
 import { formatReadingStatusLabel, isReadingEditable } from '@/domain/readingQueue/queueRules';
 import { ConsolidatedReading } from '@/domain/reading/types';
+import {
+  EPMAPS_COLORS,
+  EPMAPS_RADII,
+  EPMAPS_SPACING,
+  EPMAPS_TOUCH,
+  EPMAPS_TYPOGRAPHY,
+} from '@/constants/theme';
 
 export default function ReadingDetailScreen() {
   const router = useRouter();
@@ -61,7 +69,7 @@ export default function ReadingDetailScreen() {
       <SafeAreaView style={styles.safeArea}>
         <GlobalStatusBar />
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#005C8A" />
+          <ActivityIndicator size="large" color={EPMAPS_COLORS.primary} />
           <Text style={styles.loadingText}>Cargando detalle de lectura...</Text>
         </View>
       </SafeAreaView>
@@ -75,14 +83,26 @@ export default function ReadingDetailScreen() {
         <View style={styles.container}>
           <TouchableOpacity
             style={styles.backButton}
+            activeOpacity={0.8}
             onPress={() => router.back()}
             accessibilityRole="button"
             accessibilityLabel="Regresar a la bandeja"
           >
-            <Text style={styles.backButtonText}>← Regresar</Text>
+            <View style={styles.backButtonBadge}>
+              <Ionicons name="arrow-back" size={16} color={EPMAPS_COLORS.primaryDark} />
+            </View>
+            <Text style={styles.backButtonText}>Regresar</Text>
           </TouchableOpacity>
           <View style={styles.errorCard}>
-            <Text style={styles.errorTitle}>Aviso</Text>
+            <View style={styles.bannerHeaderRow}>
+              <Ionicons
+                name="alert-circle"
+                size={18}
+                color={EPMAPS_COLORS.danger}
+                style={styles.bannerLeadIcon}
+              />
+              <Text style={styles.errorTitle}>Aviso</Text>
+            </View>
             <Text style={styles.errorText}>{errorMessage || 'Lectura no disponible.'}</Text>
           </View>
         </View>
@@ -134,8 +154,12 @@ export default function ReadingDetailScreen() {
   };
 
   const formattedCapturedAt = new Date(reading.capturedAt).toLocaleString('es-EC');
-  const formattedUpdatedAt = reading.updatedAt ? new Date(reading.updatedAt).toLocaleString('es-EC') : null;
-  const formattedSyncedAt = reading.syncedAt ? new Date(reading.syncedAt).toLocaleString('es-EC') : null;
+  const formattedUpdatedAt = reading.updatedAt
+    ? new Date(reading.updatedAt).toLocaleString('es-EC')
+    : null;
+  const formattedSyncedAt = reading.syncedAt
+    ? new Date(reading.syncedAt).toLocaleString('es-EC')
+    : null;
 
   const getStatusBadgeStyle = (status: ConsolidatedReading['status']) => {
     switch (status) {
@@ -163,28 +187,71 @@ export default function ReadingDetailScreen() {
     }
   };
 
+  const getStatusIconConfig = (
+    status: ConsolidatedReading['status']
+  ): { name: keyof typeof Ionicons.glyphMap; color: string } => {
+    switch (status) {
+      case 'PENDING_VERIFICATION':
+        return { name: 'shield-half-outline', color: EPMAPS_COLORS.verification };
+      case 'PENDING_SYNC':
+        return { name: 'cloud-upload-outline', color: EPMAPS_COLORS.pendingSync };
+      case 'REQUIRES_ATTENTION':
+        return { name: 'warning-outline', color: EPMAPS_COLORS.attention };
+      case 'SUBMITTED':
+        return { name: 'checkmark-circle', color: EPMAPS_COLORS.success };
+    }
+  };
+
+  const statusIcon = getStatusIconConfig(reading.status);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <GlobalStatusBar />
 
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
+            activeOpacity={0.8}
             onPress={() => router.back()}
             accessibilityRole="button"
             accessibilityLabel="Regresar a la bandeja"
           >
-            <Text style={styles.backButtonText}>← Regresar</Text>
+            <View style={styles.backButtonBadge}>
+              <Ionicons name="arrow-back" size={16} color={EPMAPS_COLORS.primaryDark} />
+            </View>
+            <Text style={styles.backButtonText}>Regresar</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>Detalle de Lectura</Text>
-          <Text style={styles.subtitle}>Medidor: {reading.meterCode}</Text>
+
+          <View style={styles.headerTitleRow}>
+            <View style={styles.headerTitleCol}>
+              <Text style={styles.title}>Detalle de Lectura</Text>
+              <Text style={styles.subtitle}>Medidor: {reading.meterCode}</Text>
+            </View>
+            <View style={styles.meterPill}>
+              <Ionicons
+                name="speedometer-outline"
+                size={14}
+                color={EPMAPS_COLORS.accentDark}
+                style={styles.meterPillIcon}
+              />
+              <Text style={styles.meterPillText}>{reading.meterCode}</Text>
+            </View>
+          </View>
         </View>
 
         {/* Banner de inmutabilidad si ya fue enviada */}
         {isSubmitted ? (
           <View style={styles.immutableBanner}>
-            <Text style={styles.immutableBannerTitle}>Lectura Enviada (Solo Lectura)</Text>
+            <View style={styles.bannerHeaderRow}>
+              <Ionicons
+                name="shield-checkmark"
+                size={18}
+                color={EPMAPS_COLORS.success}
+                style={styles.bannerLeadIcon}
+              />
+              <Text style={styles.immutableBannerTitle}>Lectura Enviada (Solo Lectura)</Text>
+            </View>
             <Text style={styles.immutableBannerText}>
               Este registro ya fue transmitido a los sistemas centrales de la EPMAPS. Por seguridad y
               auditoría no es posible modificar ni eliminar sus datos.
@@ -195,7 +262,15 @@ export default function ReadingDetailScreen() {
         {/* Banner si requiere atención por anomalía imprevista o medidor inexistente */}
         {reading.status === 'REQUIRES_ATTENTION' ? (
           <View style={styles.attentionBanner}>
-            <Text style={styles.attentionBannerTitle}>⚠️ Requiere Atención en Campo</Text>
+            <View style={styles.bannerHeaderRow}>
+              <Ionicons
+                name="alert-circle"
+                size={18}
+                color={EPMAPS_COLORS.attention}
+                style={styles.bannerLeadIcon}
+              />
+              <Text style={styles.attentionBannerTitle}>Requiere Atención en Campo</Text>
+            </View>
             <Text style={styles.attentionBannerText}>
               {reading.requiresAttentionReason ||
                 'Al cotejar esta lectura con la oficina se detectó una discrepancia o anomalía de consumo. Por favor revise o edite el registro.'}
@@ -205,9 +280,16 @@ export default function ReadingDetailScreen() {
 
         {/* Tarjeta de Datos de la Lectura */}
         <View style={styles.card}>
+          <Text style={styles.cardCategoryLabel}>FICHA DE REGISTRO • AUDITORÍA</Text>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Información del Registro</Text>
             <View style={[styles.statusBadge, getStatusBadgeStyle(reading.status)]}>
+              <Ionicons
+                name={statusIcon.name}
+                size={13}
+                color={statusIcon.color}
+                style={styles.statusBadgeIcon}
+              />
               <Text style={[styles.statusBadgeText, getStatusTextStyle(reading.status)]}>
                 {formatReadingStatusLabel(reading.status)}
               </Text>
@@ -216,7 +298,7 @@ export default function ReadingDetailScreen() {
 
           <View style={styles.dataRow}>
             <Text style={styles.dataLabel}>Código de medidor:</Text>
-            <Text style={styles.dataValue}>{reading.meterCode}</Text>
+            <Text style={[styles.dataValue, styles.tabularValue]}>{reading.meterCode}</Text>
           </View>
 
           <View style={styles.dataRow}>
@@ -240,7 +322,7 @@ export default function ReadingDetailScreen() {
 
           <View style={styles.dataRow}>
             <Text style={styles.dataLabel}>Lectura actual:</Text>
-            <Text style={styles.dataValue}>
+            <Text style={[styles.dataValue, styles.tabularValue]}>
               {reading.currentReading !== null && reading.currentReading !== undefined
                 ? `${reading.currentReading} m³`
                 : 'No aplica'}
@@ -250,13 +332,15 @@ export default function ReadingDetailScreen() {
           {reading.previousReading !== null && reading.previousReading !== undefined ? (
             <View style={styles.dataRow}>
               <Text style={styles.dataLabel}>Lectura anterior:</Text>
-              <Text style={styles.dataValue}>{reading.previousReading} m³</Text>
+              <Text style={[styles.dataValue, styles.tabularValue]}>
+                {reading.previousReading} m³
+              </Text>
             </View>
           ) : null}
 
           <View style={styles.dataRow}>
             <Text style={styles.dataLabel}>Consumo calculado:</Text>
-            <Text style={styles.dataValue}>
+            <Text style={[styles.dataValue, styles.tabularValue]}>
               {reading.consumption !== null && reading.consumption !== undefined
                 ? `${reading.consumption} m³`
                 : reading.hasNoPreviousData
@@ -278,33 +362,44 @@ export default function ReadingDetailScreen() {
 
           <View style={styles.dataRow}>
             <Text style={styles.dataLabel}>Fecha de captura:</Text>
-            <Text style={styles.dataValue}>{formattedCapturedAt}</Text>
+            <Text style={[styles.dataValue, styles.tabularValue]}>{formattedCapturedAt}</Text>
           </View>
 
           {formattedUpdatedAt ? (
             <View style={styles.dataRow}>
               <Text style={styles.dataLabel}>Última edición:</Text>
-              <Text style={styles.dataValue}>{formattedUpdatedAt}</Text>
+              <Text style={[styles.dataValue, styles.tabularValue]}>{formattedUpdatedAt}</Text>
             </View>
           ) : null}
 
           {formattedSyncedAt ? (
             <View style={styles.dataRow}>
               <Text style={styles.dataLabel}>Fecha de envío:</Text>
-              <Text style={styles.dataValue}>{formattedSyncedAt}</Text>
+              <Text style={[styles.dataValue, styles.tabularValue]}>{formattedSyncedAt}</Text>
             </View>
           ) : null}
         </View>
 
         {/* Sección de Fotografía */}
         <View style={styles.card}>
+          <Text style={styles.cardCategoryLabel}>EVIDENCIA VISUAL • RESPALDO</Text>
           <Text style={styles.sectionTitle}>Fotografía Adjunta</Text>
           {reading.photoUri ? (
             <View style={styles.photoContainer}>
               <Image source={{ uri: reading.photoUri }} style={styles.photo} />
             </View>
           ) : (
-            <Text style={styles.noPhotoText}>No se adjuntó fotografía para este registro.</Text>
+            <View style={styles.noPhotoBox}>
+              <Ionicons
+                name="camera-outline"
+                size={20}
+                color={EPMAPS_COLORS.textMuted}
+                style={styles.noPhotoIcon}
+              />
+              <Text style={styles.noPhotoText}>
+                No se adjuntó fotografía para este registro.
+              </Text>
+            </View>
           )}
         </View>
 
@@ -313,20 +408,34 @@ export default function ReadingDetailScreen() {
           <View style={styles.actionButtonsContainer}>
             <TouchableOpacity
               style={styles.editButton}
+              activeOpacity={0.85}
               onPress={handleEditReading}
               accessibilityRole="button"
               accessibilityLabel="Editar Lectura"
             >
-              <Text style={styles.editButtonText}>✏️ Editar Lectura</Text>
+              <Ionicons
+                name="create-outline"
+                size={19}
+                color={EPMAPS_COLORS.textInverse}
+                style={styles.actionButtonIcon}
+              />
+              <Text style={styles.editButtonText}>Editar Lectura</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.deleteButton}
+              activeOpacity={0.85}
               onPress={handleDeleteReading}
               accessibilityRole="button"
               accessibilityLabel="Descartar lectura"
             >
-              <Text style={styles.deleteButtonText}>🗑️ Descartar lectura</Text>
+              <Ionicons
+                name="trash-outline"
+                size={18}
+                color={EPMAPS_COLORS.danger}
+                style={styles.actionButtonIcon}
+              />
+              <Text style={styles.deleteButtonText}>Descartar lectura</Text>
             </TouchableOpacity>
           </View>
         ) : null}
@@ -338,228 +447,329 @@ export default function ReadingDetailScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: EPMAPS_COLORS.bgLight,
   },
   container: {
-    padding: 16,
-    paddingBottom: 40,
+    padding: EPMAPS_SPACING.lg,
+    paddingBottom: EPMAPS_SPACING.hero + EPMAPS_SPACING.sm,
   },
   header: {
-    marginBottom: 16,
+    marginBottom: EPMAPS_SPACING.lg,
   },
   backButton: {
-    minHeight: 48,
-    minWidth: 48,
+    minHeight: EPMAPS_TOUCH.minHeight,
+    minWidth: EPMAPS_TOUCH.minWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginBottom: EPMAPS_SPACING.xs,
+    paddingRight: EPMAPS_SPACING.md,
+  },
+  backButtonBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: EPMAPS_RADII.sm,
+    backgroundColor: EPMAPS_COLORS.bgBlue,
+    alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginRight: EPMAPS_SPACING.sm,
   },
   backButtonText: {
-    fontSize: 16,
-    color: '#005C8A',
-    fontWeight: '600',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    color: EPMAPS_COLORS.primaryDark,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTitleCol: {
+    flex: 1,
+    marginRight: EPMAPS_SPACING.sm,
   },
   title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#1A2A3A',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.xl,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.primaryDark,
+    letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 15,
-    color: '#555555',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.textMuted,
     marginTop: 2,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
   },
-  immutableBanner: {
-    backgroundColor: '#E8F5E9',
+  meterPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: EPMAPS_COLORS.bgBlue,
     borderWidth: 1,
-    borderColor: '#81C784',
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 16,
+    borderColor: EPMAPS_COLORS.borderLight,
+    paddingHorizontal: EPMAPS_SPACING.sm,
+    paddingVertical: 5,
+    borderRadius: EPMAPS_RADII.full,
   },
-  immutableBannerTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#2E7D32',
+  meterPillIcon: {
+    marginRight: 4,
+  },
+  meterPillText: {
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.xs,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.accentDark,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
+  },
+  bannerHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 4,
   },
+  bannerLeadIcon: {
+    marginRight: 6,
+  },
+  immutableBanner: {
+    backgroundColor: EPMAPS_COLORS.successBg,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.successBorder,
+    borderRadius: EPMAPS_RADII.lg,
+    padding: EPMAPS_SPACING.lg,
+    marginBottom: EPMAPS_SPACING.lg,
+  },
+  immutableBannerTitle: {
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.success,
+  },
   immutableBannerText: {
-    fontSize: 13,
-    color: '#1B5E20',
-    lineHeight: 18,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.successDark,
+    lineHeight: 19,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
+  },
+  attentionBanner: {
+    backgroundColor: EPMAPS_COLORS.attentionBg,
+    borderWidth: 1.5,
+    borderColor: EPMAPS_COLORS.attentionBorder,
+    borderRadius: EPMAPS_RADII.lg,
+    padding: EPMAPS_SPACING.lg,
+    marginBottom: EPMAPS_SPACING.lg,
+  },
+  attentionBannerTitle: {
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.attention,
+  },
+  attentionBannerText: {
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.attentionDark,
+    lineHeight: 19,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
+    backgroundColor: EPMAPS_COLORS.surface,
+    borderRadius: EPMAPS_RADII.lg,
+    padding: EPMAPS_SPACING.lg,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    marginBottom: 16,
+    borderColor: EPMAPS_COLORS.borderLight,
+    marginBottom: EPMAPS_SPACING.lg,
+  },
+  cardCategoryLabel: {
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.xs,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.accentDark,
+    letterSpacing: 0.6,
+    marginBottom: 4,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: EPMAPS_SPACING.md,
+    paddingBottom: EPMAPS_SPACING.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: EPMAPS_COLORS.borderLight,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1A2A3A',
-    marginBottom: 8,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.lg,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.primaryDark,
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: EPMAPS_SPACING.sm,
+    paddingVertical: 5,
+    borderRadius: EPMAPS_RADII.sm,
+    borderWidth: 1,
+  },
+  statusBadgeIcon: {
+    marginRight: 4,
   },
   badgePending: {
-    backgroundColor: '#FFF8E1',
+    backgroundColor: EPMAPS_COLORS.pendingSyncBg,
+    borderColor: EPMAPS_COLORS.pendingSyncBorder,
   },
   badgeVerification: {
-    backgroundColor: '#EDE7F6',
+    backgroundColor: EPMAPS_COLORS.verificationBg,
+    borderColor: EPMAPS_COLORS.verificationBorder,
   },
   badgeAttention: {
-    backgroundColor: '#FFF3E0',
+    backgroundColor: EPMAPS_COLORS.attentionBg,
+    borderColor: EPMAPS_COLORS.attentionBorder,
   },
   badgeSubmitted: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: EPMAPS_COLORS.successBg,
+    borderColor: EPMAPS_COLORS.successBorder,
   },
   statusBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.xs,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
   },
   badgeTextPending: {
-    color: '#F57F17',
+    color: EPMAPS_COLORS.pendingSync,
   },
   badgeTextVerification: {
-    color: '#4527A0',
+    color: EPMAPS_COLORS.verification,
   },
   badgeTextAttention: {
-    color: '#E65100',
+    color: EPMAPS_COLORS.attention,
   },
   badgeTextSubmitted: {
-    color: '#2E7D32',
-  },
-  attentionBanner: {
-    backgroundColor: '#FFF3E0',
-    borderWidth: 1,
-    borderColor: '#FFB74D',
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 16,
-  },
-  attentionBannerTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#E65100',
-    marginBottom: 4,
-  },
-  attentionBannerText: {
-    fontSize: 13,
-    color: '#BF360C',
-    lineHeight: 18,
+    color: EPMAPS_COLORS.success,
   },
   dataRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 6,
   },
   dataLabel: {
-    fontSize: 14,
-    color: '#666666',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.textMuted,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
   },
   dataValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#212121',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    color: EPMAPS_COLORS.textDark,
     flexShrink: 1,
     textAlign: 'right',
+    marginLeft: EPMAPS_SPACING.sm,
+  },
+  tabularValue: {
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
+    color: EPMAPS_COLORS.primaryDark,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
   },
   anomalyText: {
-    color: '#E65100',
+    color: EPMAPS_COLORS.attention,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
   },
   divider: {
     height: 1,
-    backgroundColor: '#EEEEEE',
-    marginVertical: 10,
+    backgroundColor: EPMAPS_COLORS.borderLight,
+    marginVertical: EPMAPS_SPACING.sm,
   },
   photoContainer: {
-    marginTop: 8,
-    borderRadius: 8,
+    marginTop: EPMAPS_SPACING.md,
+    borderRadius: EPMAPS_RADII.md,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: EPMAPS_COLORS.borderLight,
+    backgroundColor: EPMAPS_COLORS.bgSecondary,
   },
   photo: {
     width: '100%',
     height: 240,
     resizeMode: 'cover',
   },
+  noPhotoBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: EPMAPS_COLORS.bgLight,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.borderLight,
+    borderRadius: EPMAPS_RADII.md,
+    padding: EPMAPS_SPACING.md,
+    marginTop: EPMAPS_SPACING.md,
+  },
+  noPhotoIcon: {
+    marginRight: EPMAPS_SPACING.sm,
+  },
   noPhotoText: {
-    fontSize: 14,
-    color: '#888888',
-    fontStyle: 'italic',
-    marginVertical: 6,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.textMuted,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
+    flex: 1,
   },
   actionButtonsContainer: {
-    marginTop: 8,
-    gap: 12,
+    marginTop: EPMAPS_SPACING.xs,
+    gap: EPMAPS_SPACING.md,
   },
   editButton: {
-    minHeight: 48,
-    backgroundColor: '#0288D1',
-    borderRadius: 8,
+    minHeight: EPMAPS_TOUCH.buttonHeight,
+    backgroundColor: EPMAPS_COLORS.primary,
+    borderRadius: EPMAPS_RADII.md,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: EPMAPS_SPACING.lg,
+  },
+  actionButtonIcon: {
+    marginRight: 8,
   },
   editButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
+    color: EPMAPS_COLORS.textInverse,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
   },
   deleteButton: {
-    minHeight: 48,
-    backgroundColor: '#FFF1F0',
+    minHeight: EPMAPS_TOUCH.buttonHeight,
+    backgroundColor: EPMAPS_COLORS.dangerSoftBg,
     borderWidth: 1,
-    borderColor: '#FFA39E',
-    borderRadius: 8,
+    borderColor: EPMAPS_COLORS.dangerSoftBorder,
+    borderRadius: EPMAPS_RADII.md,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: EPMAPS_SPACING.lg,
   },
   deleteButtonText: {
-    color: '#CF1322',
-    fontSize: 16,
-    fontWeight: '700',
+    color: EPMAPS_COLORS.danger,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: EPMAPS_SPACING.xxl,
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: '#666666',
+    marginTop: EPMAPS_SPACING.md,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    color: EPMAPS_COLORS.textMuted,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
   },
   errorCard: {
-    backgroundColor: '#FFEBEE',
-    borderRadius: 8,
+    backgroundColor: EPMAPS_COLORS.dangerBg,
+    borderRadius: EPMAPS_RADII.lg,
     borderWidth: 1,
-    borderColor: '#EF9A9A',
-    padding: 16,
-    marginTop: 16,
+    borderColor: EPMAPS_COLORS.dangerBorder,
+    padding: EPMAPS_SPACING.lg,
+    marginTop: EPMAPS_SPACING.lg,
   },
   errorTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#C62828',
-    marginBottom: 6,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.danger,
   },
   errorText: {
-    fontSize: 14,
-    color: '#B71C1C',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.dangerDark,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
+    lineHeight: 19,
   },
 });

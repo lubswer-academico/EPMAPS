@@ -12,10 +12,24 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { GlobalStatusBar } from '../components/GlobalStatusBar';
 import { useReadingWizardController } from '../presentation/reading/useReadingWizardController';
 import { requestBackgroundSync } from '../presentation/sync/useSyncEngine';
 import { MeterCondition } from '../domain/reading/types';
+import {
+  EPMAPS_COLORS,
+  EPMAPS_RADII,
+  EPMAPS_SPACING,
+  EPMAPS_TOUCH,
+  EPMAPS_TYPOGRAPHY,
+} from '../constants/theme';
+
+const CONDITION_ICONS: Record<MeterCondition, keyof typeof Ionicons.glyphMap> = {
+  Normal: 'checkmark-circle-outline',
+  Inaccesible: 'lock-closed-outline',
+  Dañado: 'construct-outline',
+};
 
 export default function ReadingWizardScreen() {
   const router = useRouter();
@@ -93,7 +107,15 @@ export default function ReadingWizardScreen() {
       {hasExistingDraft && !isEditMode ? (
         <View style={styles.draftModalContainer}>
           <View style={styles.draftModalCard}>
-            <Text style={styles.draftModalTitle}>Borrador Pendiente Detectado</Text>
+            <View style={styles.alertHeaderRow}>
+              <Ionicons
+                name="document-text-outline"
+                size={20}
+                color={EPMAPS_COLORS.warning}
+                style={styles.alertHeaderIcon}
+              />
+              <Text style={styles.draftModalTitle}>Borrador Pendiente Detectado</Text>
+            </View>
             <Text style={styles.draftModalText}>
               Existe una captura iniciada previamente para el medidor {meterCode}. ¿Desea reanudarla
               o descartarla para comenzar de nuevo?
@@ -102,17 +124,31 @@ export default function ReadingWizardScreen() {
               <TouchableOpacity
                 style={styles.discardButton}
                 onPress={discardExistingDraft}
+                activeOpacity={0.85}
                 accessibilityRole="button"
                 accessibilityLabel="Descartar borrador"
               >
+                <Ionicons
+                  name="trash-outline"
+                  size={16}
+                  color={EPMAPS_COLORS.textDark}
+                  style={styles.buttonIconSmall}
+                />
                 <Text style={styles.discardButtonText}>Descartar borrador</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.resumeButton}
                 onPress={resumeExistingDraft}
+                activeOpacity={0.85}
                 accessibilityRole="button"
                 accessibilityLabel="Reanudar captura"
               >
+                <Ionicons
+                  name="play-circle-outline"
+                  size={17}
+                  color={EPMAPS_COLORS.textInverse}
+                  style={styles.buttonIconSmall}
+                />
                 <Text style={styles.resumeButtonText}>Reanudar captura</Text>
               </TouchableOpacity>
             </View>
@@ -120,36 +156,112 @@ export default function ReadingWizardScreen() {
         </View>
       ) : null}
 
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         {/* Encabezado y Navegación Superior */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
+            activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="Regresar a consulta"
           >
-            <Text style={styles.backButtonText}>← Regresar</Text>
+            <View style={styles.backButtonBadge}>
+              <Ionicons name="arrow-back" size={16} color={EPMAPS_COLORS.primaryDark} />
+            </View>
+            <Text style={styles.backButtonText}>Regresar</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>{isEditMode ? 'Editar Lectura' : 'Toma de Lectura'}</Text>
-          <Text style={styles.subtitle}>Medidor: {meterCode}</Text>
+
+          <View style={styles.headerTitleRow}>
+            <View style={styles.headerTitleCol}>
+              <Text style={styles.title}>{isEditMode ? 'Editar Lectura' : 'Toma de Lectura'}</Text>
+              <Text style={styles.subtitle}>Medidor: {meterCode}</Text>
+            </View>
+            <View style={styles.meterPill}>
+              <Ionicons
+                name="speedometer-outline"
+                size={14}
+                color={EPMAPS_COLORS.accentDark}
+                style={styles.meterPillIcon}
+              />
+              <Text style={styles.meterPillText}>{meterCode}</Text>
+            </View>
+          </View>
         </View>
 
         {/* Indicador de Pasos del Wizard */}
         <View style={styles.stepIndicatorContainer}>
-          <View style={[styles.stepBadge, currentStep === 1 && styles.stepBadgeActive]}>
-            <Text style={[styles.stepBadgeText, currentStep === 1 && styles.stepBadgeTextActive]}>
+          <View
+            style={[
+              styles.stepBadge,
+              currentStep === 1 && styles.stepBadgeActive,
+              currentStep > 1 && styles.stepBadgeCompleted,
+            ]}
+          >
+            <Ionicons
+              name={currentStep > 1 ? 'checkmark-circle' : 'shield-checkmark-outline'}
+              size={14}
+              color={
+                currentStep === 1
+                  ? EPMAPS_COLORS.textInverse
+                  : currentStep > 1
+                    ? EPMAPS_COLORS.accentDark
+                    : EPMAPS_COLORS.textMuted
+              }
+              style={styles.stepBadgeIcon}
+            />
+            <Text
+              style={[
+                styles.stepBadgeText,
+                currentStep === 1 && styles.stepBadgeTextActive,
+                currentStep > 1 && styles.stepBadgeTextCompleted,
+              ]}
+            >
               1. Condición
             </Text>
           </View>
-          <View style={styles.stepConnector} />
-          <View style={[styles.stepBadge, currentStep === 2 && styles.stepBadgeActive]}>
-            <Text style={[styles.stepBadgeText, currentStep === 2 && styles.stepBadgeTextActive]}>
+
+          <View style={[styles.stepConnector, currentStep > 1 && styles.stepConnectorActive]} />
+
+          <View
+            style={[
+              styles.stepBadge,
+              currentStep === 2 && styles.stepBadgeActive,
+              currentStep > 2 && styles.stepBadgeCompleted,
+            ]}
+          >
+            <Ionicons
+              name={currentStep > 2 ? 'checkmark-circle' : 'speedometer-outline'}
+              size={14}
+              color={
+                currentStep === 2
+                  ? EPMAPS_COLORS.textInverse
+                  : currentStep > 2
+                    ? EPMAPS_COLORS.accentDark
+                    : EPMAPS_COLORS.textMuted
+              }
+              style={styles.stepBadgeIcon}
+            />
+            <Text
+              style={[
+                styles.stepBadgeText,
+                currentStep === 2 && styles.stepBadgeTextActive,
+                currentStep > 2 && styles.stepBadgeTextCompleted,
+              ]}
+            >
               2. Lectura
             </Text>
           </View>
-          <View style={styles.stepConnector} />
+
+          <View style={[styles.stepConnector, currentStep > 2 && styles.stepConnectorActive]} />
+
           <View style={[styles.stepBadge, currentStep === 3 && styles.stepBadgeActive]}>
+            <Ionicons
+              name="camera-outline"
+              size={14}
+              color={currentStep === 3 ? EPMAPS_COLORS.textInverse : EPMAPS_COLORS.textMuted}
+              style={styles.stepBadgeIcon}
+            />
             <Text style={[styles.stepBadgeText, currentStep === 3 && styles.stepBadgeTextActive]}>
               3. Foto
             </Text>
@@ -159,7 +271,15 @@ export default function ReadingWizardScreen() {
         {/* Alerta de Error de Validación */}
         {validationError ? (
           <View style={styles.errorBox}>
-            <Text style={styles.errorBoxTitle}>Atención requerida</Text>
+            <View style={styles.alertHeaderRow}>
+              <Ionicons
+                name="alert-circle"
+                size={18}
+                color={EPMAPS_COLORS.danger}
+                style={styles.alertHeaderIcon}
+              />
+              <Text style={styles.errorBoxTitle}>Atención requerida</Text>
+            </View>
             <Text style={styles.errorBoxText}>{validationError}</Text>
           </View>
         ) : null}
@@ -167,7 +287,9 @@ export default function ReadingWizardScreen() {
         {/* CONTENIDO DEL PASO 1: Condición del Medidor */}
         {currentStep === 1 ? (
           <View style={styles.stepContent}>
+            <Text style={styles.stepCategoryLabel}>PASO 1 DE 3 • INSPECCIÓN VISUAL</Text>
             <Text style={styles.stepSectionTitle}>Seleccione la condición física</Text>
+
             <View style={styles.conditionOptions}>
               {(['Normal', 'Inaccesible', 'Dañado'] as MeterCondition[]).map((cond) => {
                 const isSelected = draft.condition === cond;
@@ -176,9 +298,16 @@ export default function ReadingWizardScreen() {
                     key={cond}
                     style={[styles.conditionCard, isSelected && styles.conditionCardSelected]}
                     onPress={() => setCondition(cond)}
+                    activeOpacity={0.85}
                     accessibilityRole="button"
                     accessibilityLabel={`Condición ${cond}`}
                   >
+                    <Ionicons
+                      name={CONDITION_ICONS[cond]}
+                      size={22}
+                      color={isSelected ? EPMAPS_COLORS.primary : EPMAPS_COLORS.textMuted}
+                      style={styles.conditionCardIcon}
+                    />
                     <Text
                       style={[
                         styles.conditionCardText,
@@ -195,13 +324,13 @@ export default function ReadingWizardScreen() {
             {/* Campo Motivo de Inaccesibilidad */}
             {requirements.reasonRequired ? (
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Motivo de Inaccesibilidad *</Text>
+                <Text style={styles.inputLabel}>MOTIVO DE INACCESIBILIDAD *</Text>
                 <TextInput
                   style={[styles.textInput, styles.textArea]}
                   value={draft.inaccessibilityReason || ''}
                   onChangeText={setInaccessibilityReason}
                   placeholder="Ej. Reja cerrada, perro peligroso, terreno anegado..."
-                  placeholderTextColor="#9E9E9E"
+                  placeholderTextColor={EPMAPS_COLORS.textSubtle}
                   multiline
                   numberOfLines={3}
                   accessibilityLabel="Motivo de inaccesibilidad"
@@ -212,13 +341,13 @@ export default function ReadingWizardScreen() {
             {/* Campo Descripción del Daño */}
             {requirements.damageDescriptionRequired ? (
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Descripción del Daño *</Text>
+                <Text style={styles.inputLabel}>DESCRIPCIÓN DEL DAÑO *</Text>
                 <TextInput
                   style={[styles.textInput, styles.textArea]}
                   value={draft.damageDescription || ''}
                   onChangeText={setDamageDescription}
                   placeholder="Ej. Visor roto, esfera empañada, medidor trabado o manipulado..."
-                  placeholderTextColor="#9E9E9E"
+                  placeholderTextColor={EPMAPS_COLORS.textSubtle}
                   multiline
                   numberOfLines={3}
                   accessibilityLabel="Descripción del daño"
@@ -231,10 +360,17 @@ export default function ReadingWizardScreen() {
         {/* CONTENIDO DEL PASO 2: Lectura Numérica y Consumo */}
         {currentStep === 2 ? (
           <View style={styles.stepContent}>
+            <Text style={styles.stepCategoryLabel}>PASO 2 DE 3 • REGISTRO VOLUMÉTRICO</Text>
             <Text style={styles.stepSectionTitle}>Ingreso de Lectura Actual</Text>
 
             {requirements.readingDisabled ? (
               <View style={styles.infoBanner}>
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={20}
+                  color={EPMAPS_COLORS.accentDark}
+                  style={styles.bannerLeadIcon}
+                />
                 <Text style={styles.infoBannerText}>
                   Medidor catalogado como Inaccesible. La captura de lectura numérica está
                   deshabilitada para esta condición.
@@ -244,31 +380,61 @@ export default function ReadingWizardScreen() {
               <View>
                 {/* Referencias Previas */}
                 <View style={styles.referenceContainer}>
-                  <Text style={styles.referenceText}>
-                    Lectura anterior:{' '}
-                    {draft.previousReading !== null && draft.previousReading !== undefined
-                      ? `${draft.previousReading} m³`
-                      : 'Sin datos previos'}
-                  </Text>
-                  <Text style={styles.referenceText}>
-                    Consumo promedio:{' '}
-                    {draft.averageConsumption !== null && draft.averageConsumption !== undefined
-                      ? `${draft.averageConsumption} m³/mes`
-                      : 'Sin datos previos'}
-                  </Text>
+                  <View style={styles.referenceRow}>
+                    <View style={styles.referenceLabelWrap}>
+                      <Ionicons
+                        name="time-outline"
+                        size={15}
+                        color={EPMAPS_COLORS.textMuted}
+                        style={styles.referenceIcon}
+                      />
+                      <Text style={styles.referenceLabel}>Lectura anterior:</Text>
+                    </View>
+                    <Text style={styles.referenceValue}>
+                      {draft.previousReading !== null && draft.previousReading !== undefined
+                        ? `${draft.previousReading} m³`
+                        : 'Sin datos previos'}
+                    </Text>
+                  </View>
+
+                  <View style={styles.referenceDivider} />
+
+                  <View style={styles.referenceRow}>
+                    <View style={styles.referenceLabelWrap}>
+                      <Ionicons
+                        name="analytics-outline"
+                        size={15}
+                        color={EPMAPS_COLORS.textMuted}
+                        style={styles.referenceIcon}
+                      />
+                      <Text style={styles.referenceLabel}>Consumo promedio:</Text>
+                    </View>
+                    <Text style={styles.referenceValue}>
+                      {draft.averageConsumption !== null && draft.averageConsumption !== undefined
+                        ? `${draft.averageConsumption} m³/mes`
+                        : 'Sin datos previos'}
+                    </Text>
+                  </View>
                 </View>
 
                 {/* Input Lectura */}
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>
-                    Lectura Actual (m³){requirements.readingRequired ? ' *' : ' (Opcional)'}
+                    LECTURA ACTUAL (M³){requirements.readingRequired ? ' *' : ' (OPCIONAL)'}
                   </Text>
                   <TextInput
-                    style={styles.numericInput}
-                    value={draft.currentReading !== null && draft.currentReading !== undefined ? String(draft.currentReading) : ''}
+                    style={[
+                      styles.numericInput,
+                      !consumptionInfo.isValidConsistency && styles.numericInputDanger,
+                    ]}
+                    value={
+                      draft.currentReading !== null && draft.currentReading !== undefined
+                        ? String(draft.currentReading)
+                        : ''
+                    }
                     onChangeText={setCurrentReading}
                     placeholder="0"
-                    placeholderTextColor="#9E9E9E"
+                    placeholderTextColor={EPMAPS_COLORS.textSubtle}
                     keyboardType="number-pad"
                     accessibilityLabel="Lectura actual en metros cúbicos"
                   />
@@ -277,13 +443,47 @@ export default function ReadingWizardScreen() {
                 {/* Consumo Calculado y Verificación */}
                 {consumptionInfo.isPendingVerification ? (
                   <View style={styles.infoBadgePending}>
+                    <Ionicons
+                      name="cloud-offline-outline"
+                      size={18}
+                      color={EPMAPS_COLORS.accentDark}
+                      style={styles.bannerLeadIcon}
+                    />
                     <Text style={styles.infoBadgePendingText}>
                       Consumo: Pendiente de verificar (modo contingencia sin datos previos)
                     </Text>
                   </View>
                 ) : consumptionInfo.consumption !== null ? (
-                  <View style={styles.consumptionBox}>
-                    <Text style={styles.consumptionLabel}>Consumo mensual calculado:</Text>
+                  <View
+                    style={[
+                      styles.consumptionBox,
+                      !consumptionInfo.isValidConsistency && styles.consumptionBoxDanger,
+                    ]}
+                  >
+                    <View style={styles.consumptionLabelRow}>
+                      <Ionicons
+                        name={
+                          consumptionInfo.isValidConsistency
+                            ? 'water-outline'
+                            : 'alert-circle-outline'
+                        }
+                        size={18}
+                        color={
+                          consumptionInfo.isValidConsistency
+                            ? EPMAPS_COLORS.success
+                            : EPMAPS_COLORS.danger
+                        }
+                        style={styles.referenceIcon}
+                      />
+                      <Text
+                        style={[
+                          styles.consumptionLabel,
+                          !consumptionInfo.isValidConsistency && styles.consumptionLabelDanger,
+                        ]}
+                      >
+                        Consumo mensual calculado:
+                      </Text>
+                    </View>
                     <Text
                       style={[
                         styles.consumptionValue,
@@ -298,7 +498,15 @@ export default function ReadingWizardScreen() {
                 {/* Inconsistencia física: menor a anterior */}
                 {!consumptionInfo.isValidConsistency && consumptionInfo.errorMessage ? (
                   <View style={styles.dangerAlertBox}>
-                    <Text style={styles.dangerAlertTitle}>Inconsistencia Física</Text>
+                    <View style={styles.alertHeaderRow}>
+                      <Ionicons
+                        name="warning"
+                        size={18}
+                        color={EPMAPS_COLORS.danger}
+                        style={styles.alertHeaderIcon}
+                      />
+                      <Text style={styles.dangerAlertTitle}>Inconsistencia Física</Text>
+                    </View>
                     <Text style={styles.dangerAlertText}>{consumptionInfo.errorMessage}</Text>
                   </View>
                 ) : null}
@@ -306,7 +514,15 @@ export default function ReadingWizardScreen() {
                 {/* Anomalía: Consumo > 3x promedio */}
                 {isAnomaly ? (
                   <View style={styles.anomalyBox}>
-                    <Text style={styles.anomalyTitle}>ALERTA: Consumo Anómalo Detectado</Text>
+                    <View style={styles.alertHeaderRow}>
+                      <Ionicons
+                        name="alert-circle"
+                        size={20}
+                        color={EPMAPS_COLORS.warning}
+                        style={styles.alertHeaderIcon}
+                      />
+                      <Text style={styles.anomalyTitle}>ALERTA: Consumo Anómalo Detectado</Text>
+                    </View>
                     <Text style={styles.anomalyText}>
                       El consumo calculado ({consumptionInfo.consumption} m³) supera en más de 3
                       veces el consumo promedio histórico ({draft.averageConsumption} m³/mes).
@@ -314,6 +530,7 @@ export default function ReadingWizardScreen() {
                     <TouchableOpacity
                       style={styles.checkboxRow}
                       onPress={() => setAnomalyConfirmed(!draft.anomalyConfirmed)}
+                      activeOpacity={0.85}
                       accessibilityRole="checkbox"
                       accessibilityLabel="Confirmar revisión física de lectura"
                     >
@@ -324,11 +541,16 @@ export default function ReadingWizardScreen() {
                         ]}
                       >
                         {draft.anomalyConfirmed ? (
-                          <Text style={styles.checkmarkText}>✓</Text>
+                          <Ionicons
+                            name="checkmark"
+                            size={18}
+                            color={EPMAPS_COLORS.textInverse}
+                          />
                         ) : null}
                       </View>
                       <Text style={styles.checkboxLabel}>
-                        He revisado físicamente el visor del medidor y confirmo que la lectura es correcta.
+                        He revisado físicamente el visor del medidor y confirmo que la lectura es
+                        correcta.
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -341,10 +563,17 @@ export default function ReadingWizardScreen() {
         {/* CONTENIDO DEL PASO 3: Fotografía y Resumen */}
         {currentStep === 3 ? (
           <View style={styles.stepContent}>
+            <Text style={styles.stepCategoryLabel}>PASO 3 DE 3 • RESPALDO Y CIERRE</Text>
             <Text style={styles.stepSectionTitle}>Evidencia Fotográfica</Text>
 
             {requirements.photoRequired ? (
               <View style={styles.requirementBanner}>
+                <Ionicons
+                  name="camera"
+                  size={18}
+                  color={EPMAPS_COLORS.danger}
+                  style={styles.bannerLeadIcon}
+                />
                 <Text style={styles.requirementBannerText}>
                   * La fotografía es estrictamente obligatoria para esta lectura (por condición de
                   daño o consumo anómalo).
@@ -352,6 +581,12 @@ export default function ReadingWizardScreen() {
               </View>
             ) : (
               <View style={styles.optionalBanner}>
+                <Ionicons
+                  name="checkmark-circle-outline"
+                  size={18}
+                  color={EPMAPS_COLORS.success}
+                  style={styles.bannerLeadIcon}
+                />
                 <Text style={styles.optionalBannerText}>
                   La fotografía es opcional para medidores normales sin anomalía o inaccesibles.
                 </Text>
@@ -360,7 +595,15 @@ export default function ReadingWizardScreen() {
 
             {cameraPermissionDenied ? (
               <View style={styles.dangerAlertBox}>
-                <Text style={styles.dangerAlertTitle}>Permiso de Cámara Denegado</Text>
+                <View style={styles.alertHeaderRow}>
+                  <Ionicons
+                    name="ban-outline"
+                    size={18}
+                    color={EPMAPS_COLORS.danger}
+                    style={styles.alertHeaderIcon}
+                  />
+                  <Text style={styles.dangerAlertTitle}>Permiso de Cámara Denegado</Text>
+                </View>
                 <Text style={styles.dangerAlertText}>
                   Se requieren permisos de acceso a la cámara para capturar la evidencia. Por favor
                   habilítelos en los ajustes del terminal.
@@ -376,17 +619,31 @@ export default function ReadingWizardScreen() {
                   <TouchableOpacity
                     style={styles.retakePhotoButton}
                     onPress={capturePhoto}
+                    activeOpacity={0.85}
                     accessibilityRole="button"
                     accessibilityLabel="Repetir fotografía"
                   >
+                    <Ionicons
+                      name="camera-reverse-outline"
+                      size={18}
+                      color={EPMAPS_COLORS.textInverse}
+                      style={styles.buttonIconSmall}
+                    />
                     <Text style={styles.retakePhotoButtonText}>Repetir Foto</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.deletePhotoButton}
                     onPress={removePhoto}
+                    activeOpacity={0.85}
                     accessibilityRole="button"
                     accessibilityLabel="Eliminar fotografía"
                   >
+                    <Ionicons
+                      name="trash-outline"
+                      size={18}
+                      color={EPMAPS_COLORS.danger}
+                      style={styles.buttonIconSmall}
+                    />
                     <Text style={styles.deletePhotoButtonText}>Eliminar Foto</Text>
                   </TouchableOpacity>
                 </View>
@@ -395,17 +652,32 @@ export default function ReadingWizardScreen() {
               <TouchableOpacity
                 style={styles.cameraTriggerButton}
                 onPress={capturePhoto}
+                activeOpacity={0.85}
                 accessibilityRole="button"
                 accessibilityLabel="Abrir cámara y capturar foto"
               >
-                <Text style={styles.cameraTriggerIcon}>📷</Text>
+                <View style={styles.cameraIconCircle}>
+                  <Ionicons name="camera-outline" size={28} color={EPMAPS_COLORS.primary} />
+                </View>
                 <Text style={styles.cameraTriggerText}>Tomar Fotografía del Medidor</Text>
+                <Text style={styles.cameraTriggerSubtext}>
+                  Enfoque el visor numérico y el código físico del medidor
+                </Text>
               </TouchableOpacity>
             )}
 
             {/* Resumen Final de Captura */}
             <View style={styles.summaryCard}>
-              <Text style={styles.summaryTitle}>Resumen de Registro</Text>
+              <View style={styles.summaryHeaderRow}>
+                <Ionicons
+                  name="clipboard-outline"
+                  size={17}
+                  color={EPMAPS_COLORS.primaryDark}
+                  style={styles.alertHeaderIcon}
+                />
+                <Text style={styles.summaryTitle}>Resumen de Registro</Text>
+              </View>
+              <View style={styles.summaryDivider} />
               <Text style={styles.summaryItem}>• Medidor: {draft.meterCode}</Text>
               <Text style={styles.summaryItem}>• Condición: {draft.condition}</Text>
               {draft.inaccessibilityReason ? (
@@ -415,10 +687,14 @@ export default function ReadingWizardScreen() {
                 <Text style={styles.summaryItem}>• Daño: {draft.damageDescription}</Text>
               ) : null}
               {draft.currentReading !== null && draft.currentReading !== undefined ? (
-                <Text style={styles.summaryItem}>• Lectura: {draft.currentReading} m³</Text>
+                <Text style={[styles.summaryItem, styles.summaryItemTabular]}>
+                  • Lectura: {draft.currentReading} m³
+                </Text>
               ) : null}
               {draft.consumption !== null && draft.consumption !== undefined ? (
-                <Text style={styles.summaryItem}>• Consumo: {draft.consumption} m³</Text>
+                <Text style={[styles.summaryItem, styles.summaryItemTabular]}>
+                  • Consumo: {draft.consumption} m³
+                </Text>
               ) : null}
               {draft.isAnomaly ? (
                 <Text style={styles.summaryItem}>• Anomalía: Confirmada físicamente</Text>
@@ -436,34 +712,59 @@ export default function ReadingWizardScreen() {
             <TouchableOpacity
               style={styles.navButtonSecondary}
               onPress={goToPreviousStep}
+              activeOpacity={0.85}
               accessibilityRole="button"
               accessibilityLabel="Paso anterior"
             >
-              <Text style={styles.navButtonSecondaryText}>← Anterior</Text>
+              <Ionicons
+                name="arrow-back"
+                size={18}
+                color={EPMAPS_COLORS.primaryDark}
+                style={styles.buttonIconSmall}
+              />
+              <Text style={styles.navButtonSecondaryText}>Anterior</Text>
             </TouchableOpacity>
-          ) : <View style={{ flex: 1 }} />}
+          ) : (
+            <View style={styles.footerSpacer} />
+          )}
 
           {currentStep < 3 ? (
             <TouchableOpacity
               style={styles.navButtonPrimary}
               onPress={goToNextStep}
+              activeOpacity={0.85}
               accessibilityRole="button"
               accessibilityLabel="Siguiente paso"
             >
-              <Text style={styles.navButtonPrimaryText}>Siguiente →</Text>
+              <Text style={styles.navButtonPrimaryText}>Siguiente</Text>
+              <Ionicons
+                name="arrow-forward"
+                size={18}
+                color={EPMAPS_COLORS.textInverse}
+                style={styles.buttonIconRight}
+              />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
               style={[styles.navButtonFinish, isSaving && styles.buttonDisabled]}
               onPress={handleFinish}
               disabled={isSaving}
+              activeOpacity={0.85}
               accessibilityRole="button"
               accessibilityLabel="Finalizar y guardar en cola local"
             >
               {isSaving ? (
-                <ActivityIndicator color="#FFFFFF" />
+                <ActivityIndicator color={EPMAPS_COLORS.textInverse} />
               ) : (
-                <Text style={styles.navButtonFinishText}>Finalizar y Guardar</Text>
+                <View style={styles.finishButtonInner}>
+                  <Ionicons
+                    name="checkmark-done-circle-outline"
+                    size={20}
+                    color={EPMAPS_COLORS.textInverse}
+                    style={styles.buttonIconSmall}
+                  />
+                  <Text style={styles.navButtonFinishText}>Finalizar y Guardar</Text>
+                </View>
               )}
             </TouchableOpacity>
           )}
@@ -476,497 +777,711 @@ export default function ReadingWizardScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: EPMAPS_COLORS.bgLight,
   },
   container: {
-    padding: 16,
-    paddingBottom: 40,
+    padding: EPMAPS_SPACING.lg,
+    paddingBottom: EPMAPS_SPACING.hero,
   },
+  // Cabecera y Navegación Superior
   header: {
-    marginBottom: 16,
+    marginBottom: EPMAPS_SPACING.lg,
   },
   backButton: {
-    minHeight: 48,
-    minWidth: 48,
+    minHeight: EPMAPS_TOUCH.minHeight,
+    minWidth: EPMAPS_TOUCH.minWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: EPMAPS_SPACING.xs,
+    alignSelf: 'flex-start',
+  },
+  backButtonBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: EPMAPS_RADII.sm,
+    backgroundColor: EPMAPS_COLORS.bgBlue,
+    alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginRight: EPMAPS_SPACING.sm,
   },
   backButtonText: {
-    fontSize: 16,
-    color: '#005C8A',
-    fontWeight: '600',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    color: EPMAPS_COLORS.primaryDark,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTitleCol: {
+    flex: 1,
+    marginRight: EPMAPS_SPACING.sm,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1A2A3A',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.xl,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.primaryDark,
+    letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 15,
-    color: '#555555',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.textMuted,
     marginTop: 2,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
   },
-  // Indicador de pasos
+  meterPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: EPMAPS_COLORS.bgBlue,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.borderLight,
+    paddingHorizontal: EPMAPS_SPACING.sm,
+    paddingVertical: 5,
+    borderRadius: EPMAPS_RADII.full,
+  },
+  meterPillIcon: {
+    marginRight: 4,
+  },
+  meterPillText: {
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.xs,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.accentDark,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
+  },
+  // Indicador de pasos del Wizard
   stepIndicatorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: EPMAPS_COLORS.surface,
+    padding: EPMAPS_SPACING.sm,
+    borderRadius: EPMAPS_RADII.lg,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    marginBottom: 16,
+    borderColor: EPMAPS_COLORS.borderLight,
+    marginBottom: EPMAPS_SPACING.lg,
   },
   stepBadge: {
-    paddingVertical: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 7,
     paddingHorizontal: 10,
-    borderRadius: 6,
-    backgroundColor: '#F0F0F0',
+    borderRadius: EPMAPS_RADII.md,
+    backgroundColor: EPMAPS_COLORS.bgSecondary,
   },
   stepBadgeActive: {
-    backgroundColor: '#005C8A',
+    backgroundColor: EPMAPS_COLORS.primaryDark,
+  },
+  stepBadgeCompleted: {
+    backgroundColor: EPMAPS_COLORS.bgBlue,
+  },
+  stepBadgeIcon: {
+    marginRight: 4,
   },
   stepBadgeText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#666666',
+    fontSize: 12,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    color: EPMAPS_COLORS.textMuted,
   },
   stepBadgeTextActive: {
-    color: '#FFFFFF',
+    color: EPMAPS_COLORS.textInverse,
+  },
+  stepBadgeTextCompleted: {
+    color: EPMAPS_COLORS.accentDark,
   },
   stepConnector: {
     flex: 1,
     height: 2,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: EPMAPS_COLORS.borderLight,
     marginHorizontal: 4,
   },
-  // Alertas
+  stepConnectorActive: {
+    backgroundColor: EPMAPS_COLORS.accentDark,
+  },
+  // Alertas y Banners Compartidos
+  alertHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  alertHeaderIcon: {
+    marginRight: 6,
+  },
+  bannerLeadIcon: {
+    marginRight: EPMAPS_SPACING.sm,
+    marginTop: 1,
+  },
   errorBox: {
-    backgroundColor: '#FFEBEE',
+    backgroundColor: EPMAPS_COLORS.dangerBg,
     borderWidth: 1,
-    borderColor: '#E57373',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    borderColor: EPMAPS_COLORS.dangerBorder,
+    borderRadius: EPMAPS_RADII.md,
+    padding: EPMAPS_SPACING.md,
+    marginBottom: EPMAPS_SPACING.lg,
   },
   errorBoxTitle: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#D32F2F',
-    marginBottom: 4,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.danger,
   },
   errorBoxText: {
-    fontSize: 13,
-    color: '#B71C1C',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.danger,
+    lineHeight: 18,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
   },
-  // Modal de Borrador
+  // Modal/Banner de Borrador en Caliente
   draftModalContainer: {
-    backgroundColor: '#FFF8E1',
-    borderWidth: 2,
-    borderColor: '#FFB300',
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: EPMAPS_COLORS.warningBg,
+    borderWidth: 1.5,
+    borderColor: EPMAPS_COLORS.warningBorder,
+    marginHorizontal: EPMAPS_SPACING.lg,
+    marginTop: EPMAPS_SPACING.md,
+    padding: EPMAPS_SPACING.lg,
+    borderRadius: EPMAPS_RADII.lg,
   },
   draftModalCard: {},
   draftModalTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#8D6E63',
-    marginBottom: 6,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.textDark,
   },
   draftModalText: {
-    fontSize: 14,
-    color: '#4E342E',
-    marginBottom: 14,
-    lineHeight: 20,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.textDark,
+    marginBottom: EPMAPS_SPACING.md,
+    lineHeight: 19,
   },
   draftModalActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 12,
+    gap: EPMAPS_SPACING.sm,
   },
   discardButton: {
-    minHeight: 48,
-    paddingHorizontal: 16,
+    minHeight: EPMAPS_TOUCH.minHeight,
+    paddingHorizontal: EPMAPS_SPACING.md,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#ECEFF1',
-    borderRadius: 6,
+    backgroundColor: EPMAPS_COLORS.surface,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.borderMedium,
+    borderRadius: EPMAPS_RADII.md,
   },
   discardButtonText: {
-    color: '#455A64',
-    fontWeight: '600',
-    fontSize: 14,
+    color: EPMAPS_COLORS.textDark,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
   },
   resumeButton: {
-    minHeight: 48,
-    paddingHorizontal: 16,
+    minHeight: EPMAPS_TOUCH.minHeight,
+    paddingHorizontal: EPMAPS_SPACING.md,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#005C8A',
-    borderRadius: 6,
+    backgroundColor: EPMAPS_COLORS.primaryDark,
+    borderRadius: EPMAPS_RADII.md,
   },
   resumeButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 14,
+    color: EPMAPS_COLORS.textInverse,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
   },
-  // Contenido de pasos
+  // Contenedor de cada paso
   stepContent: {
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: EPMAPS_COLORS.surface,
+    padding: EPMAPS_SPACING.lg,
+    borderRadius: EPMAPS_RADII.lg,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    marginBottom: 20,
+    borderColor: EPMAPS_COLORS.borderLight,
+    marginBottom: EPMAPS_SPACING.xl,
+  },
+  stepHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  stepCategoryLabel: {
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.xs,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.accentDark,
+    letterSpacing: 0.6,
+    marginBottom: 4,
   },
   stepSectionTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#1A2A3A',
-    marginBottom: 14,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.lg,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.primaryDark,
+    marginBottom: EPMAPS_SPACING.lg,
   },
-  // Paso 1
+  // Paso 1: Condición física
   conditionOptions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
-    gap: 8,
+    marginBottom: EPMAPS_SPACING.lg,
+    gap: EPMAPS_SPACING.sm,
   },
   conditionCard: {
     flex: 1,
-    minHeight: 48,
-    borderWidth: 2,
-    borderColor: '#CFD8DC',
-    borderRadius: 8,
+    minHeight: 74,
+    borderWidth: 1.5,
+    borderColor: EPMAPS_COLORS.borderMedium,
+    borderRadius: EPMAPS_RADII.md,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F9FBE7',
+    backgroundColor: EPMAPS_COLORS.bgLight,
+    paddingVertical: EPMAPS_SPACING.sm,
+    paddingHorizontal: EPMAPS_SPACING.xs,
   },
   conditionCardSelected: {
-    borderColor: '#005C8A',
-    backgroundColor: '#E1F5FE',
+    borderColor: EPMAPS_COLORS.primary,
+    borderWidth: 2,
+    backgroundColor: EPMAPS_COLORS.bgBlue,
+  },
+  conditionCardIcon: {
+    marginBottom: 4,
   },
   conditionCardText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#37474F',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    color: EPMAPS_COLORS.textMuted,
   },
   conditionCardTextSelected: {
-    color: '#005C8A',
-    fontWeight: '700',
+    color: EPMAPS_COLORS.primaryDark,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
   },
   inputGroup: {
-    marginBottom: 14,
+    marginBottom: EPMAPS_SPACING.md,
   },
   inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333333',
-    marginBottom: 6,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.xs,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.primaryDark,
+    letterSpacing: 0.6,
+    marginBottom: EPMAPS_SPACING.sm,
   },
   textInput: {
-    borderWidth: 1,
-    borderColor: '#BDBDBD',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 15,
-    color: '#212121',
-    backgroundColor: '#FAFAFA',
+    borderWidth: 1.2,
+    borderColor: EPMAPS_COLORS.borderMedium,
+    borderRadius: EPMAPS_RADII.md,
+    paddingHorizontal: EPMAPS_SPACING.md,
+    paddingVertical: EPMAPS_SPACING.md,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    color: EPMAPS_COLORS.textDark,
+    backgroundColor: EPMAPS_COLORS.bgLight,
   },
   textArea: {
-    minHeight: 70,
+    minHeight: 84,
     textAlignVertical: 'top',
   },
-  // Paso 2
+  // Paso 2: Lectura y Consumo
   referenceContainer: {
-    backgroundColor: '#F5F5F5',
-    padding: 12,
-    borderRadius: 6,
-    marginBottom: 14,
+    backgroundColor: EPMAPS_COLORS.bgSecondary,
+    padding: EPMAPS_SPACING.md,
+    borderRadius: EPMAPS_RADII.md,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.borderLight,
+    marginBottom: EPMAPS_SPACING.lg,
   },
-  referenceText: {
+  referenceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 3,
+  },
+  referenceLabelWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  referenceIcon: {
+    marginRight: 6,
+  },
+  referenceLabel: {
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.textMuted,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
+  },
+  referenceValue: {
     fontSize: 14,
-    color: '#424242',
-    marginVertical: 2,
+    color: EPMAPS_COLORS.primaryDark,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
+  },
+  referenceDivider: {
+    height: 1,
+    backgroundColor: EPMAPS_COLORS.borderLight,
+    marginVertical: 6,
   },
   numericInput: {
     borderWidth: 2,
-    borderColor: '#005C8A',
-    borderRadius: 8,
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#005C8A',
-    paddingHorizontal: 16,
-    minHeight: 52,
-    backgroundColor: '#FAFAFA',
+    borderColor: EPMAPS_COLORS.primary,
+    borderRadius: EPMAPS_RADII.md,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.hero,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.primaryDark,
+    paddingHorizontal: EPMAPS_SPACING.lg,
+    minHeight: 56,
+    backgroundColor: EPMAPS_COLORS.bgLight,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
+  },
+  numericInputDanger: {
+    borderColor: EPMAPS_COLORS.danger,
+    backgroundColor: EPMAPS_COLORS.dangerSoftBg,
+    color: EPMAPS_COLORS.danger,
   },
   consumptionBox: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#E8F5E9',
-    padding: 12,
-    borderRadius: 6,
-    marginVertical: 10,
+    backgroundColor: EPMAPS_COLORS.successBg,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.successBorder,
+    padding: EPMAPS_SPACING.md,
+    borderRadius: EPMAPS_RADII.md,
+    marginVertical: EPMAPS_SPACING.sm,
+  },
+  consumptionBoxDanger: {
+    backgroundColor: EPMAPS_COLORS.dangerBg,
+    borderColor: EPMAPS_COLORS.dangerBorder,
+  },
+  consumptionLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   consumptionLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#2E7D32',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    color: EPMAPS_COLORS.success,
+  },
+  consumptionLabelDanger: {
+    color: EPMAPS_COLORS.danger,
   },
   consumptionValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1B5E20',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.lg,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.success,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
   },
   consumptionValueDanger: {
-    color: '#C62828',
+    color: EPMAPS_COLORS.danger,
   },
   infoBadgePending: {
-    backgroundColor: '#EDE7F6',
-    padding: 10,
-    borderRadius: 6,
-    marginVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: EPMAPS_COLORS.bgBlue,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.borderLight,
+    padding: EPMAPS_SPACING.md,
+    borderRadius: EPMAPS_RADII.md,
+    marginVertical: EPMAPS_SPACING.sm,
   },
   infoBadgePendingText: {
-    fontSize: 13,
-    color: '#4527A0',
-    fontWeight: '600',
+    flex: 1,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.accentDark,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    lineHeight: 18,
   },
   infoBanner: {
-    backgroundColor: '#ECEFF1',
-    padding: 14,
-    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: EPMAPS_COLORS.bgBlue,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.borderLight,
+    padding: EPMAPS_SPACING.md,
+    borderRadius: EPMAPS_RADII.md,
   },
   infoBannerText: {
-    fontSize: 14,
-    color: '#455A64',
+    flex: 1,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.accentDark,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
     lineHeight: 20,
   },
   dangerAlertBox: {
-    backgroundColor: '#FFEBEE',
+    backgroundColor: EPMAPS_COLORS.dangerBg,
     borderWidth: 1,
-    borderColor: '#EF5350',
-    borderRadius: 6,
-    padding: 12,
-    marginVertical: 10,
+    borderColor: EPMAPS_COLORS.dangerBorder,
+    borderRadius: EPMAPS_RADII.md,
+    padding: EPMAPS_SPACING.md,
+    marginVertical: EPMAPS_SPACING.sm,
   },
   dangerAlertTitle: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#C62828',
-    marginBottom: 4,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.danger,
   },
   dangerAlertText: {
-    fontSize: 13,
-    color: '#B71C1C',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.danger,
     lineHeight: 18,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.medium,
   },
   anomalyBox: {
-    backgroundColor: '#FFF3E0',
-    borderWidth: 2,
-    borderColor: '#FFA726',
-    borderRadius: 8,
-    padding: 14,
-    marginVertical: 12,
+    backgroundColor: EPMAPS_COLORS.warningBg,
+    borderWidth: 1.5,
+    borderColor: EPMAPS_COLORS.warningBorder,
+    borderRadius: EPMAPS_RADII.lg,
+    padding: EPMAPS_SPACING.lg,
+    marginVertical: EPMAPS_SPACING.md,
   },
   anomalyTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#E65100',
-    marginBottom: 6,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.textDark,
   },
   anomalyText: {
-    fontSize: 13,
-    color: '#BF360C',
-    lineHeight: 18,
-    marginBottom: 12,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.textDark,
+    lineHeight: 19,
+    marginBottom: EPMAPS_SPACING.md,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
   },
   checkboxRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 48,
+    minHeight: EPMAPS_TOUCH.minHeight,
+    backgroundColor: EPMAPS_COLORS.surface,
+    paddingHorizontal: EPMAPS_SPACING.md,
+    paddingVertical: EPMAPS_SPACING.sm,
+    borderRadius: EPMAPS_RADII.md,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.warningBorder,
   },
   checkboxSquare: {
     width: 26,
     height: 26,
     borderWidth: 2,
-    borderColor: '#E65100',
-    borderRadius: 4,
-    backgroundColor: '#FFFFFF',
+    borderColor: EPMAPS_COLORS.warning,
+    borderRadius: EPMAPS_RADII.sm,
+    backgroundColor: EPMAPS_COLORS.surface,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: EPMAPS_SPACING.md,
   },
   checkboxSquareChecked: {
-    backgroundColor: '#E65100',
-  },
-  checkmarkText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 16,
+    backgroundColor: EPMAPS_COLORS.warning,
+    borderColor: EPMAPS_COLORS.warning,
   },
   checkboxLabel: {
     flex: 1,
-    fontSize: 13,
-    color: '#BF360C',
-    fontWeight: '600',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.textDark,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    lineHeight: 18,
   },
-  // Paso 3
+  // Paso 3: Evidencia Fotográfica y Resumen
   requirementBanner: {
-    backgroundColor: '#FFEBEE',
-    padding: 10,
-    borderRadius: 6,
-    marginBottom: 14,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: EPMAPS_COLORS.dangerBg,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.dangerBorder,
+    padding: EPMAPS_SPACING.md,
+    borderRadius: EPMAPS_RADII.md,
+    marginBottom: EPMAPS_SPACING.lg,
   },
   requirementBannerText: {
-    fontSize: 13,
-    color: '#C62828',
-    fontWeight: '600',
+    flex: 1,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.danger,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    lineHeight: 18,
   },
   optionalBanner: {
-    backgroundColor: '#E8F5E9',
-    padding: 10,
-    borderRadius: 6,
-    marginBottom: 14,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: EPMAPS_COLORS.successBg,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.successBorder,
+    padding: EPMAPS_SPACING.md,
+    borderRadius: EPMAPS_RADII.md,
+    marginBottom: EPMAPS_SPACING.lg,
   },
   optionalBannerText: {
-    fontSize: 13,
-    color: '#2E7D32',
+    flex: 1,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.success,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
+    lineHeight: 18,
   },
   cameraTriggerButton: {
     borderWidth: 2,
-    borderColor: '#005C8A',
+    borderColor: EPMAPS_COLORS.primary,
     borderStyle: 'dashed',
-    borderRadius: 8,
-    minHeight: 120,
+    borderRadius: EPMAPS_RADII.lg,
+    minHeight: 140,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F0F7FA',
-    marginBottom: 16,
+    backgroundColor: EPMAPS_COLORS.bgBlue,
+    padding: EPMAPS_SPACING.lg,
+    marginBottom: EPMAPS_SPACING.lg,
   },
-  cameraTriggerIcon: {
-    fontSize: 32,
-    marginBottom: 6,
+  cameraIconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: EPMAPS_RADII.full,
+    backgroundColor: EPMAPS_COLORS.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: EPMAPS_SPACING.sm,
   },
   cameraTriggerText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#005C8A',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.primaryDark,
+  },
+  cameraTriggerSubtext: {
+    fontSize: 12,
+    color: EPMAPS_COLORS.accentDark,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
+    marginTop: 4,
+    textAlign: 'center',
   },
   photoPreviewCard: {
-    borderRadius: 8,
+    borderRadius: EPMAPS_RADII.lg,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#CFD8DC',
-    marginBottom: 16,
+    borderColor: EPMAPS_COLORS.borderMedium,
+    backgroundColor: EPMAPS_COLORS.surface,
+    marginBottom: EPMAPS_SPACING.lg,
   },
   photoPreviewImage: {
     width: '100%',
     height: 220,
-    backgroundColor: '#ECEFF1',
+    backgroundColor: EPMAPS_COLORS.bgSecondary,
   },
   photoActionsRow: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    padding: 10,
+    backgroundColor: EPMAPS_COLORS.surface,
+    padding: EPMAPS_SPACING.md,
     justifyContent: 'space-between',
-    gap: 10,
+    gap: EPMAPS_SPACING.sm,
   },
   retakePhotoButton: {
     flex: 1,
-    minHeight: 48,
-    backgroundColor: '#005C8A',
-    borderRadius: 6,
+    minHeight: EPMAPS_TOUCH.minHeight,
+    backgroundColor: EPMAPS_COLORS.primary,
+    borderRadius: EPMAPS_RADII.md,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
   retakePhotoButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 14,
+    color: EPMAPS_COLORS.textInverse,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
   },
   deletePhotoButton: {
     flex: 1,
-    minHeight: 48,
-    backgroundColor: '#ECEFF1',
-    borderRadius: 6,
+    minHeight: EPMAPS_TOUCH.minHeight,
+    backgroundColor: EPMAPS_COLORS.dangerSoftBg,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.dangerSoftBorder,
+    borderRadius: EPMAPS_RADII.md,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
   deletePhotoButtonText: {
-    color: '#C62828',
-    fontWeight: '600',
-    fontSize: 14,
+    color: EPMAPS_COLORS.danger,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
   },
   summaryCard: {
-    backgroundColor: '#F8F9FA',
-    padding: 12,
-    borderRadius: 6,
+    backgroundColor: EPMAPS_COLORS.bgLight,
+    padding: EPMAPS_SPACING.lg,
+    borderRadius: EPMAPS_RADII.md,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: EPMAPS_COLORS.borderLight,
+  },
+  summaryHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   summaryTitle: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#333333',
-    marginBottom: 6,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.primaryDark,
+  },
+  summaryDivider: {
+    height: 1,
+    backgroundColor: EPMAPS_COLORS.borderLight,
+    marginVertical: EPMAPS_SPACING.sm,
   },
   summaryItem: {
-    fontSize: 13,
-    color: '#555555',
-    marginVertical: 2,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    color: EPMAPS_COLORS.textDark,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
+    marginVertical: 3,
   },
-  // Footer acciones
+  summaryItemTabular: {
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
+  },
+  // Footer acciones de navegación y consolidación
   footerActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: EPMAPS_SPACING.md,
+  },
+  footerSpacer: {
+    flex: 1,
+  },
+  buttonIconSmall: {
+    marginRight: 6,
+  },
+  buttonIconRight: {
+    marginLeft: 6,
   },
   navButtonSecondary: {
     flex: 1,
-    minHeight: 48,
-    backgroundColor: '#ECEFF1',
-    borderRadius: 8,
+    minHeight: EPMAPS_TOUCH.buttonHeight,
+    backgroundColor: EPMAPS_COLORS.surface,
+    borderWidth: 1.5,
+    borderColor: EPMAPS_COLORS.borderMedium,
+    borderRadius: EPMAPS_RADII.md,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
   navButtonSecondaryText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#455A64',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    color: EPMAPS_COLORS.primaryDark,
   },
   navButtonPrimary: {
     flex: 1,
-    minHeight: 48,
-    backgroundColor: '#005C8A',
-    borderRadius: 8,
+    minHeight: EPMAPS_TOUCH.buttonHeight,
+    backgroundColor: EPMAPS_COLORS.primary,
+    borderRadius: EPMAPS_RADII.md,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
   navButtonPrimaryText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.textInverse,
   },
   navButtonFinish: {
     flex: 1,
-    minHeight: 48,
-    backgroundColor: '#2E7D32',
-    borderRadius: 8,
+    minHeight: EPMAPS_TOUCH.buttonHeight,
+    backgroundColor: EPMAPS_COLORS.success,
+    borderRadius: EPMAPS_RADII.md,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  finishButtonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   navButtonFinishText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    color: EPMAPS_COLORS.textInverse,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
 });
+

@@ -10,8 +10,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { GlobalStatusBar } from '@/components/GlobalStatusBar';
 import { useMeterSearchController } from '@/presentation/meter/useMeterSearchController';
+import {
+  EPMAPS_COLORS,
+  EPMAPS_RADII,
+  EPMAPS_SPACING,
+  EPMAPS_TOUCH,
+} from '@/constants/theme';
 
 export default function MeterSearchScreen() {
   const router = useRouter();
@@ -47,16 +54,20 @@ export default function MeterSearchScreen() {
     <SafeAreaView style={styles.safeArea}>
       <GlobalStatusBar />
 
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Cabecera */}
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        {/* Cabecera de Navegación */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
+            activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="Regresar a inicio"
           >
-            <Text style={styles.backButtonText}>← Regresar</Text>
+            <View style={styles.backButtonBadge}>
+              <Ionicons name="arrow-back" size={16} color={EPMAPS_COLORS.primaryDark} />
+            </View>
+            <Text style={styles.backButtonText}>Regresar</Text>
           </TouchableOpacity>
           <Text style={styles.title}>Consulta de Medidor</Text>
           <Text style={styles.subtitle}>
@@ -66,7 +77,7 @@ export default function MeterSearchScreen() {
 
         {/* Sección de Entrada de Código */}
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Código del Medidor</Text>
+          <Text style={styles.inputLabel}>CÓDIGO DEL MEDIDOR</Text>
           <TextInput
             style={[
               styles.input,
@@ -75,7 +86,7 @@ export default function MeterSearchScreen() {
             value={meterCodeInput}
             onChangeText={handleCodeChange}
             placeholder="MED-XXXXXX o dígitos"
-            placeholderTextColor="#9E9E9E"
+            placeholderTextColor={EPMAPS_COLORS.textSubtle}
             autoCapitalize="characters"
             autoCorrect={false}
             maxLength={10}
@@ -83,7 +94,10 @@ export default function MeterSearchScreen() {
           />
 
           {validationError ? (
-            <Text style={styles.validationErrorText}>{validationError}</Text>
+            <View style={styles.inlineErrorRow}>
+              <Ionicons name="alert-circle" size={14} color={EPMAPS_COLORS.danger} style={styles.errorIcon} />
+              <Text style={styles.validationErrorText}>{validationError}</Text>
+            </View>
           ) : null}
 
           <TouchableOpacity
@@ -93,13 +107,17 @@ export default function MeterSearchScreen() {
             ]}
             onPress={searchMeter}
             disabled={!isValidCode || isSearching}
+            activeOpacity={0.85}
             accessibilityRole="button"
             accessibilityLabel="Consultar Medidor"
           >
             {isSearching ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color={EPMAPS_COLORS.textInverse} />
             ) : (
-              <Text style={styles.searchButtonText}>Consultar Medidor</Text>
+              <View style={styles.buttonInnerRow}>
+                <Ionicons name="search" size={18} color={EPMAPS_COLORS.textInverse} style={styles.buttonIcon} />
+                <Text style={styles.searchButtonText}>Consultar Medidor</Text>
+              </View>
             )}
           </TouchableOpacity>
         </View>
@@ -107,7 +125,10 @@ export default function MeterSearchScreen() {
         {/* Mensaje de Error General */}
         {errorMessage ? (
           <View style={styles.errorBox}>
-            <Text style={styles.errorBoxTitle}>Aviso</Text>
+            <View style={styles.alertHeaderRow}>
+              <Ionicons name="alert-circle" size={18} color={EPMAPS_COLORS.danger} style={styles.alertHeaderIcon} />
+              <Text style={styles.errorBoxTitle}>Aviso</Text>
+            </View>
             <Text style={styles.errorBoxText}>{errorMessage}</Text>
           </View>
         ) : null}
@@ -115,16 +136,21 @@ export default function MeterSearchScreen() {
         {/* Caso Límite D3: Sin señal y sin datos en caché */}
         {noSignalNoDataWarning ? (
           <View style={styles.warningBox}>
-            <Text style={styles.warningBoxTitle}>Sin Cobertura de Red</Text>
+            <View style={styles.alertHeaderRow}>
+              <Ionicons name="cloud-offline-outline" size={20} color={EPMAPS_COLORS.warning} style={styles.alertHeaderIcon} />
+              <Text style={styles.warningBoxTitle}>Sin Cobertura de Red</Text>
+            </View>
             <Text style={styles.warningBoxText}>
               Sin conexión y sin datos en memoria de jornada. Los datos de cuenta y lectura anterior quedan pendientes de contrastar.
             </Text>
             <TouchableOpacity
               style={styles.secondaryActionButton}
               onPress={proceedToCaptureWithoutData}
+              activeOpacity={0.85}
               accessibilityRole="button"
               accessibilityLabel="Continuar a captura sin datos previos"
             >
+              <Ionicons name="arrow-forward-circle-outline" size={18} color={EPMAPS_COLORS.textInverse} style={styles.buttonIcon} />
               <Text style={styles.secondaryActionButtonText}>
                 Continuar a captura sin datos previos
               </Text>
@@ -136,9 +162,18 @@ export default function MeterSearchScreen() {
         {meterData ? (
           <View style={styles.recordCard}>
             <View style={styles.recordHeaderRow}>
-              <Text style={styles.recordCodeText}>{meterData.code}</Text>
+              <View style={styles.recordTitleCol}>
+                <Text style={styles.recordCategoryLabel}>MEDIDOR IDENTIFICADO</Text>
+                <Text style={styles.recordCodeText}>{meterData.code}</Text>
+              </View>
               <View style={[styles.badge, isFromCache ? styles.badgeCache : styles.badgeOnline]}>
-                <Text style={styles.badgeText}>
+                <Ionicons
+                  name={isFromCache ? 'hardware-chip-outline' : 'cloud-done-outline'}
+                  size={13}
+                  color={isFromCache ? EPMAPS_COLORS.accentDark : EPMAPS_COLORS.success}
+                  style={styles.badgeIcon}
+                />
+                <Text style={[styles.badgeText, isFromCache ? styles.badgeCacheText : styles.badgeOnlineText]}>
                   {isFromCache ? 'Memoria de Jornada' : 'Oficina en Línea'}
                 </Text>
               </View>
@@ -159,19 +194,21 @@ export default function MeterSearchScreen() {
 
             <View style={styles.dataRow}>
               <Text style={styles.dataLabel}>3. Nro. Cuenta:</Text>
-              <Text style={styles.dataValue}>{meterData.accountNumber}</Text>
+              <Text style={[styles.dataValue, styles.accountValue]}>{meterData.accountNumber}</Text>
             </View>
 
             <View style={styles.dataRow}>
               <Text style={styles.dataLabel}>4. Estado:</Text>
-              <Text style={[styles.dataValue, styles.statusValue]}>
-                {meterData.status.toUpperCase()}
-              </Text>
+              <View style={styles.statusBadge}>
+                <Text style={styles.statusBadgeText}>
+                  {meterData.status.toUpperCase()}
+                </Text>
+              </View>
             </View>
 
             <View style={styles.dataRow}>
               <Text style={styles.dataLabel}>5. Última Lectura:</Text>
-              <Text style={styles.dataValue}>{meterData.lastReading.value} m³</Text>
+              <Text style={[styles.dataValue, styles.readingValue]}>{meterData.lastReading.value} m³</Text>
             </View>
 
             <View style={styles.dataRow}>
@@ -183,7 +220,7 @@ export default function MeterSearchScreen() {
 
             <View style={styles.dataRow}>
               <Text style={styles.dataLabel}>7. Consumo Promedio:</Text>
-              <Text style={styles.dataValue}>{meterData.averageConsumption} m³/mes</Text>
+              <Text style={[styles.dataValue, styles.averageValue]}>{meterData.averageConsumption} m³/mes</Text>
             </View>
           </View>
         ) : null}
@@ -194,18 +231,36 @@ export default function MeterSearchScreen() {
             styles.duplicateBox,
             duplicateBlock.isSubmitted ? styles.duplicateBoxBlocked : styles.duplicateBoxPending
           ]}>
-            <Text style={styles.duplicateBoxTitle}>
-              {duplicateBlock.isSubmitted ? 'Bloqueo por Duplicidad Mensual' : 'Lectura Mensual Existente'}
+            <View style={styles.alertHeaderRow}>
+              <Ionicons
+                name={duplicateBlock.isSubmitted ? 'lock-closed' : 'alert-circle'}
+                size={20}
+                color={duplicateBlock.isSubmitted ? EPMAPS_COLORS.danger : EPMAPS_COLORS.warning}
+                style={styles.alertHeaderIcon}
+              />
+              <Text style={[
+                styles.duplicateBoxTitle,
+                duplicateBlock.isSubmitted ? styles.duplicateTitleBlocked : styles.duplicateTitlePending
+              ]}>
+                {duplicateBlock.isSubmitted ? 'Bloqueo por Duplicidad Mensual' : 'Lectura Mensual Existente'}
+              </Text>
+            </View>
+            <Text style={[
+              styles.duplicateBoxText,
+              duplicateBlock.isSubmitted ? styles.duplicateTextBlocked : styles.duplicateTextPending
+            ]}>
+              {duplicateBlock.message}
             </Text>
-            <Text style={styles.duplicateBoxText}>{duplicateBlock.message}</Text>
 
             {duplicateBlock.canEditPending ? (
               <TouchableOpacity
                 style={styles.editPendingButton}
                 onPress={() => router.push('/reading-queue')}
+                activeOpacity={0.85}
                 accessibilityRole="button"
                 accessibilityLabel="Ver o editar lectura pendiente"
               >
+                <Ionicons name="file-tray-stacked-outline" size={18} color={EPMAPS_COLORS.textInverse} style={styles.buttonIcon} />
                 <Text style={styles.editPendingButtonText}>Ver / Editar en Bandeja de Lecturas</Text>
               </TouchableOpacity>
             ) : null}
@@ -218,9 +273,11 @@ export default function MeterSearchScreen() {
             <TouchableOpacity
               style={styles.captureButton}
               onPress={() => handleNavigateToCapture(!!meterData)}
+              activeOpacity={0.85}
               accessibilityRole="button"
               accessibilityLabel="Registrar Nueva Lectura"
             >
+              <Ionicons name="create-outline" size={22} color={EPMAPS_COLORS.textInverse} style={styles.buttonIcon} />
               <Text style={styles.captureButtonText}>Registrar Nueva Lectura</Text>
             </TouchableOpacity>
           </View>
@@ -233,246 +290,385 @@ export default function MeterSearchScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: EPMAPS_COLORS.bgLight,
   },
   container: {
-    padding: 16,
-    paddingBottom: 40,
+    padding: EPMAPS_SPACING.lg,
+    paddingBottom: EPMAPS_SPACING.hero,
   },
+  // Cabecera de Navegación
   header: {
-    marginBottom: 20,
+    marginBottom: EPMAPS_SPACING.lg,
   },
   backButton: {
-    minHeight: 48,
-    minWidth: 48,
+    minHeight: EPMAPS_TOUCH.minHeight,
+    minWidth: EPMAPS_TOUCH.minWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: EPMAPS_SPACING.xs,
+    alignSelf: 'flex-start',
+  },
+  backButtonBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: EPMAPS_RADII.sm,
+    backgroundColor: EPMAPS_COLORS.bgBlue,
+    alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginRight: EPMAPS_SPACING.sm,
   },
   backButtonText: {
-    fontSize: 16,
-    color: '#0D47A1',
-    fontWeight: '600',
+    fontSize: 15,
+    color: EPMAPS_COLORS.primaryDark,
+    fontWeight: '700',
   },
   title: {
     fontSize: 22,
-    fontWeight: '700',
-    color: '#1F2937',
+    fontWeight: '800',
+    color: EPMAPS_COLORS.primaryDark,
+    letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 4,
+    fontSize: 13,
+    color: EPMAPS_COLORS.textMuted,
+    marginTop: 3,
   },
+  // Formulario de Búsqueda
   inputContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
+    backgroundColor: EPMAPS_COLORS.surface,
+    borderRadius: EPMAPS_RADII.lg,
+    padding: EPMAPS_SPACING.lg,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    marginBottom: 16,
+    borderColor: EPMAPS_COLORS.borderLight,
+    marginBottom: EPMAPS_SPACING.lg,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
   },
   inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    fontSize: 11,
+    fontWeight: '800',
+    color: EPMAPS_COLORS.primaryDark,
+    letterSpacing: 0.6,
+    marginBottom: EPMAPS_SPACING.sm,
   },
   input: {
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    backgroundColor: '#FAFAFA',
+    minHeight: EPMAPS_TOUCH.minHeight,
+    borderWidth: 1.2,
+    borderColor: EPMAPS_COLORS.borderMedium,
+    borderRadius: EPMAPS_RADII.md,
+    paddingHorizontal: EPMAPS_SPACING.md,
+    fontSize: 17,
+    fontWeight: '700',
+    color: EPMAPS_COLORS.textDark,
+    backgroundColor: EPMAPS_COLORS.bgLight,
   },
   inputErrorBorder: {
-    borderColor: '#DC2626',
+    borderColor: EPMAPS_COLORS.danger,
+    backgroundColor: EPMAPS_COLORS.dangerSoftBg,
   },
-  validationErrorText: {
-    color: '#DC2626',
-    fontSize: 13,
+  inlineErrorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 6,
   },
+  errorIcon: {
+    marginRight: 4,
+  },
+  validationErrorText: {
+    color: EPMAPS_COLORS.danger,
+    fontSize: 12.5,
+    fontWeight: '600',
+    flex: 1,
+  },
   searchButton: {
-    minHeight: 48,
-    backgroundColor: '#0D47A1',
-    borderRadius: 6,
+    minHeight: EPMAPS_TOUCH.buttonHeight,
+    backgroundColor: EPMAPS_COLORS.primary,
+    borderRadius: EPMAPS_RADII.md,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 14,
+    marginTop: EPMAPS_SPACING.md,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   searchButtonDisabled: {
-    backgroundColor: '#9CA3AF',
+    backgroundColor: '#93C5FD',
+    elevation: 0,
+    shadowOpacity: 0,
   },
   searchButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    color: EPMAPS_COLORS.textInverse,
+    fontSize: 15.5,
+    fontWeight: '700',
+  },
+  buttonInnerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonIcon: {
+    marginRight: 8,
+  },
+  // Banners de Alerta
+  alertHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  alertHeaderIcon: {
+    marginRight: 6,
   },
   errorBox: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#F87171',
+    backgroundColor: EPMAPS_COLORS.dangerBg,
+    borderColor: EPMAPS_COLORS.dangerBorder,
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 16,
+    borderRadius: EPMAPS_RADII.md,
+    padding: EPMAPS_SPACING.md,
+    marginBottom: EPMAPS_SPACING.lg,
   },
   errorBoxTitle: {
-    color: '#991B1B',
-    fontWeight: '700',
+    color: EPMAPS_COLORS.danger,
+    fontWeight: '800',
     fontSize: 14,
-    marginBottom: 4,
   },
   errorBoxText: {
     color: '#7F1D1D',
-    fontSize: 14,
+    fontSize: 13,
+    lineHeight: 18,
   },
   warningBox: {
-    backgroundColor: '#FFFBEB',
-    borderColor: '#FCD34D',
+    backgroundColor: EPMAPS_COLORS.warningBg,
+    borderColor: EPMAPS_COLORS.warningBorder,
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 16,
+    borderRadius: EPMAPS_RADII.lg,
+    padding: EPMAPS_SPACING.md,
+    marginBottom: EPMAPS_SPACING.lg,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
   warningBoxTitle: {
     color: '#92400E',
-    fontWeight: '700',
-    fontSize: 14,
-    marginBottom: 4,
+    fontWeight: '800',
+    fontSize: 14.5,
   },
   warningBoxText: {
     color: '#78350F',
-    fontSize: 14,
-    marginBottom: 12,
-    lineHeight: 20,
+    fontSize: 13,
+    marginBottom: EPMAPS_SPACING.md,
+    lineHeight: 19,
   },
   secondaryActionButton: {
-    minHeight: 48,
-    backgroundColor: '#D97706',
-    borderRadius: 6,
+    minHeight: EPMAPS_TOUCH.minHeight,
+    backgroundColor: EPMAPS_COLORS.warning,
+    borderRadius: EPMAPS_RADII.md,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: EPMAPS_SPACING.md,
   },
   secondaryActionButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
+    color: EPMAPS_COLORS.textInverse,
+    fontSize: 13.5,
+    fontWeight: '700',
   },
+  // Ficha Técnica y Comercial (7 Campos)
   recordCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
+    backgroundColor: EPMAPS_COLORS.surface,
+    borderRadius: EPMAPS_RADII.lg,
+    padding: EPMAPS_SPACING.lg,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    marginBottom: 16,
+    borderColor: EPMAPS_COLORS.borderLight,
+    marginBottom: EPMAPS_SPACING.lg,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
   },
   recordHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  recordTitleCol: {
+    flex: 1,
+  },
+  recordCategoryLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: EPMAPS_COLORS.textMuted,
+    letterSpacing: 0.6,
+    marginBottom: 2,
+  },
   recordCodeText: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#0D47A1',
+    fontWeight: '800',
+    color: EPMAPS_COLORS.primaryDark,
+    letterSpacing: 0.3,
   },
   badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: EPMAPS_RADII.full,
+    borderWidth: 1,
   },
   badgeCache: {
-    backgroundColor: '#E0F2FE',
+    backgroundColor: EPMAPS_COLORS.bgBlue,
+    borderColor: '#BAE6FD',
   },
   badgeOnline: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: EPMAPS_COLORS.successBg,
+    borderColor: EPMAPS_COLORS.successBorder,
+  },
+  badgeIcon: {
+    marginRight: 4,
   },
   badgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#0369A1',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  badgeCacheText: {
+    color: EPMAPS_COLORS.accentDark,
+  },
+  badgeOnlineText: {
+    color: EPMAPS_COLORS.success,
   },
   divider: {
     height: 1,
-    backgroundColor: '#E5E7EB',
-    marginVertical: 12,
+    backgroundColor: EPMAPS_COLORS.borderLight,
+    marginVertical: EPMAPS_SPACING.md,
   },
   dataRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 4,
+    alignItems: 'center',
+    paddingVertical: 6,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#F1F5F9',
   },
   dataLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
+    fontSize: 13,
+    color: EPMAPS_COLORS.textMuted,
+    fontWeight: '600',
   },
   dataValue: {
-    fontSize: 14,
-    color: '#111827',
-    fontWeight: '600',
+    fontSize: 13.5,
+    color: EPMAPS_COLORS.textDark,
+    fontWeight: '700',
     flexShrink: 1,
     textAlign: 'right',
   },
-  statusValue: {
-    color: '#059669',
+  accountValue: {
+    color: EPMAPS_COLORS.primaryDark,
+    fontWeight: '800',
   },
-  duplicateBox: {
-    borderRadius: 8,
-    padding: 14,
+  statusBadge: {
+    backgroundColor: EPMAPS_COLORS.successBg,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: EPMAPS_RADII.sm,
     borderWidth: 1,
-    marginBottom: 16,
+    borderColor: EPMAPS_COLORS.successBorder,
+  },
+  statusBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: EPMAPS_COLORS.success,
+  },
+  readingValue: {
+    color: EPMAPS_COLORS.textDark,
+    fontWeight: '800',
+  },
+  averageValue: {
+    color: EPMAPS_COLORS.primary,
+    fontWeight: '800',
+  },
+  // Bloqueo / Duplicidad R10
+  duplicateBox: {
+    borderRadius: EPMAPS_RADII.lg,
+    padding: EPMAPS_SPACING.md,
+    borderWidth: 1,
+    marginBottom: EPMAPS_SPACING.lg,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
   duplicateBoxBlocked: {
-    backgroundColor: '#FEE2E2',
-    borderColor: '#EF4444',
+    backgroundColor: EPMAPS_COLORS.dangerBg,
+    borderColor: EPMAPS_COLORS.dangerBorder,
   },
   duplicateBoxPending: {
-    backgroundColor: '#FEF3C7',
-    borderColor: '#F59E0B',
+    backgroundColor: EPMAPS_COLORS.warningBg,
+    borderColor: EPMAPS_COLORS.warningBorder,
   },
   duplicateBoxTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#991B1B',
-    marginBottom: 4,
+    fontSize: 14.5,
+    fontWeight: '800',
+  },
+  duplicateTitleBlocked: {
+    color: EPMAPS_COLORS.danger,
+  },
+  duplicateTitlePending: {
+    color: '#92400E',
   },
   duplicateBoxText: {
-    fontSize: 14,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  duplicateTextBlocked: {
     color: '#7F1D1D',
-    lineHeight: 20,
+  },
+  duplicateTextPending: {
+    color: '#78350F',
   },
   editPendingButton: {
-    minHeight: 48,
-    backgroundColor: '#D97706',
-    borderRadius: 6,
+    minHeight: EPMAPS_TOUCH.minHeight,
+    backgroundColor: EPMAPS_COLORS.warning,
+    borderRadius: EPMAPS_RADII.md,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 12,
+    marginTop: EPMAPS_SPACING.md,
   },
   editPendingButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  captureContainer: {
-    marginTop: 8,
-  },
-  captureButton: {
-    minHeight: 48,
-    backgroundColor: '#16A34A',
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  captureButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: EPMAPS_COLORS.textInverse,
+    fontSize: 13.5,
     fontWeight: '700',
   },
+  // Botón de Captura Maestro
+  captureContainer: {
+    marginTop: EPMAPS_SPACING.xs,
+  },
+  captureButton: {
+    minHeight: EPMAPS_TOUCH.buttonHeight,
+    backgroundColor: EPMAPS_COLORS.success,
+    borderRadius: EPMAPS_RADII.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  captureButtonText: {
+    color: EPMAPS_COLORS.textInverse,
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
 });
+

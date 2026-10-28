@@ -2,26 +2,22 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas.
 
 ## Estado actual
-- Fase: Implementación técnica (`sdd-implement`) y Obra Blanca de la Spec 005 completadas.
-- Tareas: T1 a T5 completadas `[x]` en [specs/005/tasks.md](file:///C:/Users/usuario/Desktop/Movil/prueba1/EPMAPS/specs/005/tasks.md).
-- Contrato de diseño generado en [specs/005/design.md](file:///C:/Users/usuario/Desktop/Movil/prueba1/EPMAPS/specs/005/design.md).
+- Fase: Diseño visual institucional completado al 100% en todas las specs (`001` a `005`) y formalizado en sus respectivos `specs/*/design.md`.
+- UI Aplicada: Todas las pantallas (`login`, `home`, `meter-search`, `reading-wizard`, `reading-queue`, `reading-detail`) y `GlobalStatusBar` adaptadas a `EPMAPS_COLORS`, `EPMAPS_RADII`, `EPMAPS_SPACING`, `EPMAPS_TOUCH`, `EPMAPS_TYPOGRAPHY` e `Ionicons`, con contraste WCAG AA bajo luz solar directa y objetivos táctiles ≥ 48 pt.
+- Iconografía: Integrada librería oficial `@expo/vector-icons` (`Ionicons`), eliminando todos los emojis en todas las vistas de la app.
 - Calidad: 15 suites / 151 tests pasando 100% en verde con Jest (`npx jest`) y 0 errores en TypeScript (`npx tsc --noEmit`).
-- Regla negocio post-005: si la verificación diferida falla por 404 (medidor inexistente), transiciona a `REQUIRES_ATTENTION` con motivo exacto 'Medidor inexistente en catastro' sin POST a `/lecturas`.
-- Acción 'Descartar lectura' habilitada en bandeja (`reading-queue.tsx`) y detalle (`reading-detail.tsx`): elimina de AsyncStorage, purga archivo de foto en `expo-file-system` y descuenta el contador de pendientes.
-- Sincronización 100% autónoma y desatendida (HU-005 Escenario 1): eliminado botón manual redundante (KISS/YAGNI). Disparo automático al recuperar red, reintentos progresivos ante fallos y envío de fondo al capturar con red.
 
 ## Decisiones (y por qué)
-- Spec 001: AsyncStorage (ADR-001), NetInfo (ADR-002) y Jest-Expo (ADR-003).
-- Spec 002: Axios (ADR-004) para llamadas HTTP a la oficina central.
-- Spec 003: `expo-image-picker` (ADR-005) y `expo-file-system/legacy` (ADR-006). Wizard de captura desacoplado con borradores y guardado local.
-- Spec 004: Bandeja unificada en `reading-queue.tsx`, detalle en `reading-detail.tsx`, inmutabilidad absoluta de lecturas enviadas (`SUBMITTED`) y edición in-place.
-- Spec 005: Sincronización reactiva 100% autónoma al detectar red montada en raíz (`_layout.tsx`) y sin intervención del técnico; verificación diferida (D2); idempotencia por UUID comercial (`clientReadingId`) (D3); y persistencia local de fotos bajo R7.
+- Refactorización de estilos limpios global (Specs 001 a 005): Reemplazados todos los colores hexadecimales hardcodeados por tokens de `src/constants/theme.ts` (incluyendo tokens de estado operativo `PENDING_VERIFICATION`, `PENDING_SYNC`, `REQUIRES_ATTENTION`, `SUBMITTED` y `EPMAPS_TYPOGRAPHY.tabularNums`).
+- Bandeja y Detalle de Lectura accesibles en campo: Insignias e iconos semánticos con contraste ≥ 4.5:1, banners diferenciados de inmutabilidad (`SUBMITTED`) y atención requerida (`REQUIRES_ATTENTION`), y cifras tabulares en lecturas, consumos y fechas.
+- Ver detalles en `specs/002/design.md`, `specs/003/design.md`, `specs/004/design.md` y `specs/005/design.md`.
 
 ## Aprendizajes y errores a evitar
-- Sincronización autónoma: un único listener global coordina la cola y reintentos, evitando colisiones de envío entre pantallas.
-- Si un cotejo diferido descubre consumo anómalo o código inexistente, solo se retiene esa lectura puntual, permitiendo que el resto de lecturas válidas de la cola continúen su envío.
-- Toda transmisión ante microcortes mantiene inalterable el `clientReadingId` para que el backend o MockAPI no duplique registros.
+- Los iconos vectoriales en botones con texto deben acompañarse de `flexDirection: 'row'`, `alignItems: 'center'` y espaciado consistente (`gap: 6` o márgenes laterales de 6-8 pt) para conservar el centrado vertical estricto de 48-52 pt.
+- Al exponer contadores en tarjetas de inicio, vincularlos con interacción táctil hacia la bandeja correspondiente agiliza el flujo de trabajo del operador.
 
 ## Próximos pasos
-- Ejecutar el subagente de diseño `/sdd-plan-design 005` (o `/sdd-design`) para la estilización visual definitiva sobre la obra blanca.
+- El usuario puede verificar el flujo completo de la aplicación en vivo ejecutando `npx expo start`.
+- Todas las historias de usuario (HU-001 a HU-005) cuentan con implementación funcional, pruebas en verde y diseño visual institucional cerrado.
+
 

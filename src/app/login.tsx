@@ -12,7 +12,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useSessionController } from '@/presentation/session/useSessionController';
+import { EPMAPS_COLORS, EPMAPS_RADII, EPMAPS_SPACING, EPMAPS_TOUCH } from '@/constants/theme';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -55,16 +57,25 @@ export default function LoginScreen() {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
+          {/* Cabecera Hero Institucional */}
           <View style={styles.headerContainer}>
+            <View style={styles.logoBadge}>
+              <View style={styles.logoCircle}>
+                <Ionicons name="water" size={32} color={EPMAPS_COLORS.primary} />
+              </View>
+            </View>
             <Text style={styles.title}>EPMAPS</Text>
+            <Text style={styles.agencyBadge}>AGUA DE QUITO</Text>
             <Text style={styles.subtitle}>Toma de Lecturas en Campo</Text>
           </View>
 
+          {/* Formulario de Entrada */}
           <View style={styles.formContainer}>
-            <Text style={styles.label}>Código de empleado</Text>
+            <Text style={styles.label}>CÓDIGO DE EMPLEADO</Text>
             <TextInput
               style={styles.input}
               placeholder="Ej. TEC-001"
+              placeholderTextColor={EPMAPS_COLORS.textSubtle}
               value={employeeCode}
               onChangeText={handleCodeChange}
               autoCapitalize="characters"
@@ -72,10 +83,11 @@ export default function LoginScreen() {
               accessibilityLabel="Campo de código de empleado"
             />
 
-            <Text style={styles.label}>Clave de acceso</Text>
+            <Text style={styles.label}>CLAVE DE ACCESO</Text>
             <TextInput
               style={styles.input}
               placeholder="Ingrese su clave"
+              placeholderTextColor={EPMAPS_COLORS.textSubtle}
               value={pin}
               onChangeText={handlePinChange}
               secureTextEntry
@@ -94,22 +106,34 @@ export default function LoginScreen() {
               style={[styles.button, isSubmitting && styles.buttonDisabled]}
               onPress={handleLogin}
               disabled={isSubmitting}
+              activeOpacity={0.85}
               accessibilityRole="button"
               accessibilityLabel="Iniciar Turno"
             >
               {isSubmitting ? (
-                <ActivityIndicator color="#FFFFFF" />
+                <ActivityIndicator color={EPMAPS_COLORS.textInverse} />
               ) : (
                 <Text style={styles.buttonText}>Iniciar Turno</Text>
               )}
             </TouchableOpacity>
           </View>
 
+          {/* Guía Informativa Offline */}
           <View style={styles.catalogHint}>
-            <Text style={styles.hintTitle}>Técnicos de prueba (offline):</Text>
+            <View style={styles.hintHeader}>
+              <Ionicons
+                name="information-circle"
+                size={18}
+                color={EPMAPS_COLORS.primary}
+                style={{ marginRight: 6 }}
+              />
+              <Text style={styles.hintTitle}>TÉCNICOS DISPONIBLES EN TURNO (OFFLINE)</Text>
+            </View>
+            <View style={styles.hintDivider} />
             <Text style={styles.hintItem}>• TEC-001 / Clave: 1234 (Carlos Mendoza)</Text>
             <Text style={styles.hintItem}>• TEC-002 / Clave: 5678 (Ana Morales)</Text>
             <Text style={styles.hintItem}>• TEC-003 / Clave: 9012 (Jorge Benítez)</Text>
+            <Text style={styles.hintFooter}>Catastro interno verificado para trabajo en campo</Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -120,7 +144,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: EPMAPS_COLORS.bgLight,
   },
   keyboardContainer: {
     flex: 1,
@@ -128,93 +152,157 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 24,
+    padding: EPMAPS_SPACING.xl,
   },
   headerContainer: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: EPMAPS_SPACING.hero,
+  },
+  logoBadge: {
+    marginBottom: EPMAPS_SPACING.md,
+  },
+  logoCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: EPMAPS_COLORS.bgBlue,
+    borderWidth: 2,
+    borderColor: EPMAPS_COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoIcon: {
+    fontSize: 28,
   },
   title: {
     fontSize: 28,
+    fontWeight: '800',
+    color: EPMAPS_COLORS.primaryDark,
+    letterSpacing: 1.5,
+  },
+  agencyBadge: {
+    fontSize: 12,
     fontWeight: '700',
-    color: '#0D47A1',
-    letterSpacing: 1,
+    color: EPMAPS_COLORS.accentDark,
+    letterSpacing: 1.2,
+    marginTop: 2,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#555555',
+    fontSize: 15,
+    fontWeight: '500',
+    color: EPMAPS_COLORS.textMuted,
     marginTop: 6,
   },
   formContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 20,
+    backgroundColor: EPMAPS_COLORS.surface,
+    borderRadius: EPMAPS_RADII.lg,
+    padding: EPMAPS_SPACING.xl,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: EPMAPS_COLORS.borderLight,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333333',
-    marginBottom: 6,
-    marginTop: 12,
+    fontSize: 11,
+    fontWeight: '700',
+    color: EPMAPS_COLORS.primaryDark,
+    letterSpacing: 0.5,
+    marginBottom: EPMAPS_SPACING.xs,
+    marginTop: EPMAPS_SPACING.md,
   },
   input: {
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: '#CCCCCC',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    backgroundColor: '#FAFAFA',
+    minHeight: EPMAPS_TOUCH.minHeight,
+    borderWidth: 1.2,
+    borderColor: EPMAPS_COLORS.borderMedium,
+    borderRadius: EPMAPS_RADII.md,
+    paddingHorizontal: EPMAPS_SPACING.md,
+    fontSize: 15,
+    color: EPMAPS_COLORS.textDark,
+    backgroundColor: '#F8FAFC',
   },
   errorBox: {
-    marginTop: 16,
-    padding: 12,
-    backgroundColor: '#FFEBEE',
-    borderRadius: 6,
+    marginTop: EPMAPS_SPACING.lg,
+    padding: EPMAPS_SPACING.md,
+    backgroundColor: EPMAPS_COLORS.dangerBg,
+    borderRadius: EPMAPS_RADII.md,
     borderWidth: 1,
-    borderColor: '#FFCDD2',
+    borderColor: EPMAPS_COLORS.dangerBorder,
   },
   errorText: {
-    color: '#C62828',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  button: {
-    minHeight: 48,
-    backgroundColor: '#0D47A1',
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 24,
-    paddingHorizontal: 16,
-  },
-  buttonDisabled: {
-    backgroundColor: '#90CAF9',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: EPMAPS_COLORS.danger,
+    fontSize: 13,
     fontWeight: '600',
   },
+  button: {
+    minHeight: EPMAPS_TOUCH.buttonHeight,
+    backgroundColor: EPMAPS_COLORS.primary,
+    borderRadius: EPMAPS_RADII.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: EPMAPS_SPACING.xxl,
+    paddingHorizontal: EPMAPS_SPACING.lg,
+  },
+  buttonDisabled: {
+    backgroundColor: '#93C5FD',
+  },
+  buttonText: {
+    color: EPMAPS_COLORS.textInverse,
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
   catalogHint: {
-    marginTop: 24,
-    padding: 16,
-    backgroundColor: '#E3F2FD',
-    borderRadius: 8,
+    marginTop: EPMAPS_SPACING.xxl,
+    padding: EPMAPS_SPACING.lg,
+    backgroundColor: EPMAPS_COLORS.bgBlue,
+    borderRadius: EPMAPS_RADII.lg,
     borderWidth: 1,
-    borderColor: '#BBDEFB',
+    borderColor: '#BAE6FD',
+  },
+  hintHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: EPMAPS_SPACING.xs,
+  },
+  infoIconBadge: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: EPMAPS_COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  infoIconText: {
+    color: EPMAPS_COLORS.textInverse,
+    fontSize: 11,
+    fontWeight: '800',
   },
   hintTitle: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '700',
-    color: '#1565C0',
-    marginBottom: 4,
+    color: EPMAPS_COLORS.primaryDark,
+    letterSpacing: 0.4,
+  },
+  hintDivider: {
+    height: 1,
+    backgroundColor: '#BAE6FD',
+    marginVertical: EPMAPS_SPACING.xs,
   },
   hintItem: {
     fontSize: 12,
-    color: '#0D47A1',
-    marginTop: 2,
+    fontWeight: '500',
+    color: EPMAPS_COLORS.textDark,
+    marginTop: 4,
+  },
+  hintFooter: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: EPMAPS_COLORS.accentDark,
+    marginTop: 8,
   },
 });
+

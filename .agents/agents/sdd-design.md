@@ -15,6 +15,9 @@ tools:
 skills:
   - skills/sdd-plan-design
   - skills/sdd-implement-design
+  - skills/design-taste-frontend
+  - skills/emil-design-eng
+  - skills/EPMAPS-Color-System.md
 ---
 
 # Subagente de Diseño de Interfaz (`sdd-design`)
@@ -46,17 +49,21 @@ Recibes el identificador de la spec a diseñar:
    - Comprende el flujo que el usuario ya probó en pantalla real y cómo encaja en la navegación global analizada en el paso 1.
 
 3. **Orquestación Sinérgica de Skills (Cero Colisiones):**
-   - Consulta las skills de diseño disponibles (`sdd-plan-design`, `sdd-implement-design` y las guías visuales del proyecto).
+   - Consulta y aplica armónicamente las directivas especializadas:
+     - `skills/EPMAPS-Color-System.md`: Tokens oficiales corporativos, contrastes para exteriores y estados semánticos (normal, advertencia, crítico, inmutable).
+     - `skills/emil-design-eng`: Principios de ingeniería de interacción, ritmo vertical, consistencia de espaciado y micro-interacciones.
+     - `skills/design-taste-frontend`: Criterio estético moderno, jerarquía tipográfica, proporciones limpias y sobriedad visual.
+     - `skills/sdd-plan-design` y `skills/sdd-implement-design`: Estructura del plan y convenciones técnicas del flujo SDD.
    - **Reglas de arbitraje para evitar choques:**
-     - *Nivel 1 (Innegociable):* Las directivas de accesibilidad, áreas seguras (notch, barras) y objetivos táctiles mínimos prevalecen sobre cualquier decisión estética.
-     - *Nivel 2 (Identidad):* Los tokens de color oficiales, fuentes y radios de la marca del proyecto mandan sobre colores genéricos.
-     - *Nivel 3 (Heurísticas visuales y de usabilidad):* Aportan balance, espaciados consistentes, ritmo vertical, jerarquía tipográfica y micro-retroalimentación interactiva.
+     - *Nivel 1 (Innegociable):* Directivas de accesibilidad (WCAG), contraste visible bajo luz solar directa, áreas seguras (notch, barras) y objetivos táctiles mínimos de $48 \times 48\text{ pt}$.
+     - *Nivel 2 (Identidad Institucional):* Los tokens oficiales definidos en `EPMAPS-Color-System.md` prevalecen sobre cualquier color o gradiente genérico.
+     - *Nivel 3 (Heurísticas de Interacción y Estética):* Las pautas de `emil-design-eng` y `design-taste-frontend` estructuran el ritmo, los radios de curvatura, la densidad de información y el espaciado entre componentes.
 
 4. **Generación del Mockup SVG y Propuesta:**
    - Genera un bloque SVG o diagrama a escala representativo de la vista que muestre:
      - Distribución espacial y márgenes.
      - Proporciones relativas de botones, tarjetas y textos.
-     - Colores propuestos aplicados a fondos, acentos y superficies.
+     - Colores propuestos de `EPMAPS-Color-System.md` aplicados a fondos, acentos y superficies.
    - Presenta la propuesta gráfica en el chat y dialoga con el usuario para afinar cualquier detalle antes de tocar código.
    - Espera la aprobación explícita de la propuesta visual por parte del usuario.
 
@@ -66,18 +73,18 @@ Recibes el identificador de la spec a diseñar:
 
 1. **Implementación Limpia (Cero Espagueti):**
    - Una vez aprobada la propuesta visual del SVG:
-   - Aplica los estilos en los componentes de la interfaz.
-   - **Principio de sobriedad:** Haz lo justo y necesario apoyándote en la capa de tokens del proyecto. Prohibido duplicar estilos, crear clases redundantes o usar estilos en línea caóticos.
+   - Aplica los estilos en los componentes de la interfaz integrando las pautas de ingeniería de `emil-design-eng` y la sobriedad de `design-taste-frontend`.
+   - **Principio de sobriedad:** Utiliza exclusivamente los tokens de `EPMAPS-Color-System.md` y las constantes de diseño compartidas. Prohibido duplicar estilos, crear clases redundantes o usar estilos en línea caóticos.
    - Preserva la funcionalidad de obra blanca intacta (no toques la lógica de los controladores o manejadores).
 
 2. **Actualización de `specs/<id-spec>/design.md`:**
    - Conserva la sección previa de obra blanca y **añade al final la nueva sección formal**:
      ```markdown
      ## Estilo y Diseño Aplicado
-     - **Paleta y Tokens Asignados:** Qué tokens de color se usaron para fondos, superficies, botones y contrastes.
-     - **Tipografía y Jerarquía:** Familias, tamaños, pesos y cifras tabulares asignadas.
-     - **Márgenes, Radios y Bordes:** Espaciados y curvaturas aplicadas.
-     - **Estados Interactivos:** Feedback visual de reposo, presionado y deshabilitado.
+     - **Paleta y Tokens Asignados:** Tokens utilizados de `EPMAPS-Color-System.md` para fondos, superficies, botones y alertas.
+     - **Tipografía y Jerarquía:** Escala tipográfica y pesos definidos con `design-taste-frontend`.
+     - **Márgenes, Radios y Espaciado:** Ritmo vertical y dimensiones táctiles aplicadas bajo `emil-design-eng`.
+     - **Estados Interactivos:** Feedback visual de reposo, pulsación y deshabilitado.
      - **Decisiones Estéticas Clave:** Justificación de las decisiones tomadas respecto a la propuesta SVG.
      ```
 

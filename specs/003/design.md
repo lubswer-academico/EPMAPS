@@ -105,3 +105,46 @@ Este documento define la estructura visual y funcional de la interfaz en **obra 
 - `draft.averageConsumption`: Número entero o decimal seguido de `m³/mes`.
 - `consumptionInfo.consumption`: Diferencia numérica positiva seguida de `m³`.
 - `isAnomaly`: Texto de advertencia con cálculo porcentual/múltiplo sobre el promedio histórico.
+
+---
+
+## 5. Estilo y Diseño Aplicado (Fase 2 - Contrato Visual Definitivo)
+
+- **Paleta y Tokens Asignados (`src/constants/theme.ts`):**
+  - `--epmaps-primary-dark` (`#153268`): Título principal ("Toma de Lectura" / "Editar Lectura"), títulos de sección de cada paso, etiquetas de formulario en mayúsculas, paso activo del indicador (`stepBadgeActive`), texto seleccionado de condición física, valores de referencia previa, lectura numérica principal (`numericInput`), botón de reanudación de borrador (`resumeButton`) y botón secundario de retroceso (`navButtonSecondary`).
+  - `--epmaps-primary` (`#2D72C0`): Bordes activos de tarjetas de condición seleccionada (`conditionCardSelected`), borde de entrada numérica en reposo, icono de cámara en disparador (`cameraTriggerButton`), botón "Repetir Foto" y botón primario de avance (`navButtonPrimary`).
+  - `--epmaps-accent-dark` (`#3B766C`): Píldora superior de identificación del medidor (`meterPill`), pasos completados del indicador (`stepBadgeCompleted`), etiquetas de categoría de paso (`PASO X DE 3`), subtítulo del disparador de cámara y banners informativos sobre fondo celeste (`infoBanner`, `infoBadgePending`) garantizando ratio de contraste 5.42:1 WCAG AA bajo luz solar directa.
+  - `--epmaps-surface` (`#FFFFFF`): Tarjetas contenedoras de cada etapa (`stepContent`), barra de progreso de pasos (`stepIndicatorContainer`), tarjeta de vista previa de fotografía (`photoPreviewCard`), fila interactiva del checkbox de anomalía y fondo de botones secundarios.
+  - `--epmaps-bg-light` (`#F8FAFC`): Fondo general de pantalla (`safeArea`), tarjetas de condición en reposo, campos de texto (`textInput`, `numericInput`) y tarjeta de resumen de registro (`summaryCard`).
+  - `--epmaps-bg-secondary` (`#F1F5F9`): Ficha de referencias previas (`referenceContainer`), insignias de pasos pendientes y fondo de contenedor de imagen previa.
+  - `--epmaps-bg-blue` (`#E1F2FB`): Cápsula del botón de retroceso (`backButtonBadge`), píldora del código de medidor, tarjeta de condición seleccionada, disparador de cámara con borde discontinuo y avisos de modo contingencia / inaccesibilidad.
+  - Estados semánticos operativos:
+    - **Consumo consistente y fotografía opcional:** Fondo `successBg` (`#E8F5E9`), borde `successBorder` (`#A5D6A7`), iconos y textos en `success` (`#2E7D32`). Botón maestro de cierre "Finalizar y Guardar" en `success` (`#2E7D32`) con texto e icono blanco.
+    - **Advertencia de anomalía (> 3x promedio) y detección de borrador:** Fondo `warningBg` (`#FEF3C7`), borde `warningBorder` (`#FCD34D`), iconos y casilla de verificación activa en `warning` (`#D97706`) y texto de alta legibilidad en `textDark` (`#1E293B`).
+    - **Errores de validación, inconsistencia física (`actual < anterior`), permiso de cámara denegado y obligatoriedad fotográfica:** Fondo `dangerBg` (`#FFEBEE`), borde `dangerBorder` (`#FFCDD2`), textos e iconos en `danger` (`#C62828`). Botón "Eliminar Foto" e input con inconsistencia en `dangerSoftBg` (`#FEF2F2`) y `dangerSoftBorder` (`#FCA5A5`).
+
+- **Tipografía y Jerarquía (`design-taste-frontend` & `EPMAPS_TYPOGRAPHY`):**
+  - Título de pantalla en 22 pt (`EPMAPS_TYPOGRAPHY.sizes.xl`), peso `800` (`extrabold`) y tracking de `-0.3 pt`.
+  - Etiquetas de categoría de etapa (`PASO 1 DE 3 • INSPECCIÓN VISUAL`, etc.) y etiquetas de campo en 11 pt (`xs`), mayúsculas, peso `800` y `letterSpacing: 0.6 pt`.
+  - Títulos de sección interna en 18 pt (`lg`) con peso `800` en `primaryDark`.
+  - Campo de lectura volumétrica (`numericInput`) en 26 pt (`hero`), peso `800`, con cifras tabulares (`fontVariant: ['tabular-nums']`) para alineación monoespaciada de dígitos en campo.
+  - Cifras tabulares (`tabular-nums`) aplicadas transversalmente en código de medidor, lectura anterior, consumo promedio, consumo mensual calculado, alerta de anomalía y resumen final de captura.
+  - Reemplazo total de símbolos de texto y emojis crudos por iconografía vectorial semántica de `@expo/vector-icons` (`Ionicons`).
+
+- **Márgenes, Radios y Espaciado (`emil-design-eng`):**
+  - Objetivos táctiles exteriores: mínimo 48 pt (`EPMAPS_TOUCH.minHeight`) en botones de cabecera, acciones de borrador, acciones fotográficas y fila de confirmación de anomalía; 52 pt (`EPMAPS_TOUCH.buttonHeight`) en botones de navegación inferior (`Anterior`, `Siguiente`, `Finalizar y Guardar`); 56 pt en entrada numérica principal y 74 pt de altura en tarjetas de selección de condición física (`conditionCard`).
+  - Ritmo espacial gobernado por `EPMAPS_SPACING`: padding general de 16 pt (`lg`), separación inferior de seguridad de 32 pt (`hero`), relleno interno de tarjetas de 16 pt (`lg`) y brechas de 8–12 pt (`sm`/`md`) entre controles horizontales.
+  - Radios de curvatura unificados con `EPMAPS_RADII`: 12 pt (`lg`) en tarjetas de paso, stepper, disparador de cámara y alerta de anomalía; 8 pt (`md`) en campos de entrada, tarjetas de condición y botones de acción; 6 pt (`sm`) en casilla de verificación y cápsula de retroceso; `full` (`9999`) en píldora de medidor y círculo de cámara.
+
+- **Estados Interactivos:**
+  - **Reposo:** Superficies limpias con bordes definidos (`borderLight` `#E2E8F0` y `borderMedium` `#CBD5E1`), cero gradientes artificiales y contraste nítido para lectura bajo sol.
+  - **Pulsación:** Feedback táctil inmediato con `activeOpacity={0.85}` en todos los selectores, casillas y botones de acción.
+  - **Progreso de pasos:** El indicador superior distingue visualmente entre paso completado (icono `checkmark-circle` y tinte `accentDark` sobre `bgBlue`), paso activo (`primaryDark` con texto inverso) y paso pendiente (`bgSecondary` con `textMuted`), actualizando también el conector horizontal (`stepConnectorActive`).
+  - **Validación en vivo e inconsistencia:** El campo `numericInput` y la caja `consumptionBox` conmutan dinámicamente a tokens `danger` cuando la lectura ingresada es inferior a la lectura anterior registrada.
+  - **Guardado en curso:** El botón `Finalizar y Guardar` aplica `opacity: 0.6`, bloquea toques repetidos (`disabled={isSaving}`) y despliega `ActivityIndicator` en blanco.
+
+- **Decisiones Estéticas Clave:**
+  - **Tarjetas de Condición con Iconografía Semántica:** Cada estado físico (`Normal`, `Inaccesible`, `Dañado`) incorpora su propio icono vectorial (`checkmark-circle-outline`, `lock-closed-outline`, `construct-outline`) sobre tarjetas de 74 pt de alto para facilitar la selección con una sola mano en terreno.
+  - **Contraste de Referencias vs. Entrada Volumétrica:** Las referencias históricas se agrupan en un bloque neutro (`bgSecondary`) con iconos de reloj y analítica, cediendo el protagonismo jerárquico al campo numérico de 26 pt y al indicador de consumo calculado en tiempo real.
+  - **Confirmación Física de Anomalía Encapsulada:** El checkbox de verificación de anomalía se envuelve en una tarjeta blanca interactiva de 48 pt de alto mínimo dentro del contenedor ámbar, asegurando precisión táctil y visibilidad inequívoca del check vectorial.
+
