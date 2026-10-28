@@ -1,41 +1,47 @@
-This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+﻿# AGENTS.md – EPMAPS Toma de Lecturas en Campo
 
-## Expo has changed — do not trust your training data
+Aplicación móvil para técnicos de campo de la Empresa Pública Metropolitana de Agua Potable y Saneamiento (EPMAPS) de Quito: registro de lecturas de medidores de agua con operación sin conexión (offline-first), persistencia local tolerante a cortes o cierres y sincronización automática hacia los sistemas de oficina.
 
-Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+## Stack y estructura
+- Expo (TypeScript y Expo Router).
+- Persistencia desacoplada con contratos e interfaces: almacenamiento local en el dispositivo y sincronización remota idempotente.
+- `src/domain/`: lógica pura sin React ni APIs de almacenamiento (validación de código `MED-XXXXXX`, cálculo de consumo, detección de anomalías > 3x promedio, reglas de obligatoriedad según condición del medidor y unicidad mensual).
+- `src/storage/`: implementaciones y adaptadores de persistencia (cola offline, caché de consultas de jornada y repositorios locales).
+- `src/app/`: pantallas y navegación con Expo Router.
+- Pruebas unitarias junto a cada módulo en carpetas `__tests__/`.
 
-1. Read the major version of the `expo` package in `package.json`.
-2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v<major>.0.0/`
-3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+## Comandos
+- Ejecutar la app: `npx expo start` (si la red bloquea o estás en Expo Go remoto: `npx expo start --tunnel`)
+- Pruebas automatizadas: `npx jest`
+- Chequeo de tipos: `npx tsc --noEmit`
+- Linter: `npx expo lint`
 
-## Commands
+## Convenciones
+- Código, variables y nombres de archivos en inglés; textos visibles de interfaz, mensajes al usuario y comentarios en español.
+- Regla offline-first: toda captura se guarda de inmediato en cola local persistente antes de intentar cualquier sincronización remota.
+- Las decisiones de diseño y comportamiento se toman en la spec de cada historia (`specs/<id-spec>/decisiones.md`), nunca se improvisan.
+- Estilos con StyleSheet respetando áreas seguras y objetivos táctiles mínimos de 48x48 pt.
 
-Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+## Forma de trabajar
+- Antes de escribir código, lee siempre `docs/constitution.md`, `MEMORY.md` y la spec activa (`specs/<id-spec>/decisiones.md`, `spec.md`, `plan.md`).
+- Trabaja siguiendo el flujo de SDD evolucionado de Antigravity (`.agents/skills/` y `.agents/agents/`):
+  - Subagente `sdd-spec`: Lectura global de historias (`docs/historias/`) para blindar el alcance en `spec.md` y `decisiones.md`.
+  - Subagente `sdd-plan`: Lógica, persistencia, necesidades en `# Decisiones ADR` y desglose de `tasks.md`.
+  - Subagente `sdd-adr`: Resolución técnica colaborativa de dependencias en `docs/adr/` extendiendo el plan.
+  - Subagente `sdd-implement`: TDD con Jest, UI funcional en obra blanca y generación de `specs/<id-spec>/design.md`.
+  - Subagente `sdd-design`: Lectura de todas las obras blancas (`specs/*/design.md`), mockup visual SVG y estilos limpios.
+- Muestra el plan antes de escribir y pide confirmación. Si tienes dudas o ambigüedades, para y pregunta antes de asumir.
 
-```bash
-npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
-npx expo start              # start the dev server
-npx expo lint               # lint
-npx tsc --noEmit            # typecheck
-npx expo-doctor             # diagnose dependency and config issues
-npx expo install --fix      # fix incompatible package versions
-```
+## Límites
+- Siempre: pruebas primero en la lógica de dominio (`src/domain/`) con `npx jest` en rojo antes de codificar, y textos de interfaz en español.
+- Pregunta antes de: instalar dependencias nuevas, crear archivos fuera de lo aprobado en `plan.md` o modificar interfaces de almacenamiento.
+- Nunca: depender de conexión obligatoria para capturar lecturas, permitir duplicados de un mismo medidor en el mismo mes, ni alterar lecturas ya enviadas.
 
-Run lint and typecheck before declaring any task done.
+## Memoria
+- Al empezar cada sesión con `/new`, lee `MEMORY.md`.
+- Al culminar una fase o tarea, actualiza las 4 secciones estándar de `MEMORY.md` (`Estado actual`, `Decisiones`, `Aprendizajes y errores a evitar`, `Próximos pasos`), indicando exactamente el siguiente comando o agente a ejecutar.
+- No copies decisiones completas ni especificaciones en `MEMORY.md`: remite al archivo correspondiente (`specs/<id-spec>/`). Mantén el archivo en ~50 líneas.
 
-## Navigation & Routing
-
-- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
-- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
-- Docs: https://docs.expo.dev/router/introduction.md
-
-## Building with EAS
-
-Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
-Docs: https://docs.expo.dev/eas/index.md
-
-## Rules
-
-- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
-- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+## Verificación
+- Lógica de dominio, cálculos de consumo y reglas offline: `npx jest` con todas las pruebas en verde.
+- Flujos multipantalla, fotos y estado de conectividad: verificación manual con lista de comprobación en Expo Go.
