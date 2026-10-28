@@ -8,8 +8,15 @@ export function formatConnectionStatus(isConnected: boolean | null | undefined):
 }
 
 /**
+ * Retorna la etiqueta con el conteo de lecturas pendientes formateada para la barra de estado.
+ */
+export function formatPendingReadingsLabel(count: number): string {
+  return `${count} pendientes`;
+}
+
+/**
  * Retorna el conteo inicial constante de lecturas pendientes para HU-001.
  */
 export function getInitialPendingReadingsLabel(): string {
-  return '0 pendientes';
+  return formatPendingReadingsLabel(0);
 }

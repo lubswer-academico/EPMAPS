@@ -18,6 +18,8 @@ import {
   getDraft,
   clearDraft,
   saveConsolidatedReading,
+  getReadingById,
+  updateConsolidatedReading,
 } from '../../storage/reading/readingDraftStorage';
 import {
   takeMeterPhoto,
@@ -31,6 +33,7 @@ export interface UseReadingWizardControllerProps {
   previousReading?: number | null;
   averageConsumption?: number | null;
   hasNoPreviousData?: boolean;
+  editingReadingId?: string;
 }
 
 export function useReadingWizardController({
@@ -38,20 +41,49 @@ export function useReadingWizardController({
   previousReading,
   averageConsumption,
   hasNoPreviousData = false,
+  editingReadingId,
 }: UseReadingWizardControllerProps) {
   const [draft, setDraft] = useState<ReadingDraft>(() =>
     createInitialDraft(meterCode, previousReading, averageConsumption, hasNoPreviousData)
   );
+  const [editingOriginalReading, setEditingOriginalReading] = useState<ConsolidatedReading | null>(null);
   const [hasExistingDraft, setHasExistingDraft] = useState<boolean>(false);
   const [existingDraftData, setExistingDraftData] = useState<ReadingDraft | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [cameraPermissionDenied, setCameraPermissionDenied] = useState<boolean>(false);
 
-  // Detección inicial de borrador previo para este medidor
+  const isEditMode = Boolean(editingReadingId);
+
+  // Detección inicial o precarga de lectura en modo edición
   useEffect(() => {
     let isMounted = true;
     (async () => {
+      if (editingReadingId) {
+        const existingReading = await getReadingById(editingReadingId);
+        if (existingReading && isMounted) {
+          setEditingOriginalReading(existingReading);
+          setDraft({
+            meterCode: existingReading.meterCode,
+            condition: existingReading.condition,
+            inaccessibilityReason: existingReading.inaccessibilityReason || '',
+            damageDescription: existingReading.damageDescription || '',
+            currentReading: existingReading.currentReading ?? null,
+            previousReading: existingReading.previousReading ?? null,
+            averageConsumption: existingReading.averageConsumption ?? null,
+            hasNoPreviousData: existingReading.hasNoPreviousData ?? false,
+            consumption: existingReading.consumption ?? null,
+            isAnomaly: existingReading.isAnomaly ?? false,
+            anomalyConfirmed: existingReading.anomalyConfirmed ?? false,
+            photoUri: existingReading.photoUri ?? null,
+            currentStep: 1,
+            createdAt: existingReading.capturedAt,
+            updatedAt: existingReading.updatedAt || new Date().toISOString(),
+          });
+        }
+        return;
+      }
+
       const saved = await getDraft(meterCode);
       if (saved && isMounted) {
         setHasExistingDraft(true);
@@ -61,7 +93,7 @@ export function useReadingWizardController({
     return () => {
       isMounted = false;
     };
-  }, [meterCode]);
+  }, [meterCode, editingReadingId]);
 
   // Consumo y validación de consistencia en tiempo real
   const consumptionInfo: ConsumptionCalculationResult = useMemo(() => {
@@ -285,34 +317,60 @@ export function useReadingWizardController({
 
     setIsSaving(true);
     try {
-      const consolidated: ConsolidatedReading = {
-        id: `READ-${Date.now()}-${draft.meterCode}`,
-        meterCode: draft.meterCode,
-        condition: draft.condition,
-        inaccessibilityReason: draft.inaccessibilityReason,
-        damageDescription: draft.damageDescription,
-        currentReading: draft.currentReading,
-        previousReading: draft.previousReading,
-        averageConsumption: draft.averageConsumption,
-        consumption: draft.consumption,
-        isAnomaly: draft.isAnomaly,
-        anomalyConfirmed: draft.anomalyConfirmed,
-        photoUri: draft.photoUri,
-        hasNoPreviousData: draft.hasNoPreviousData,
-        capturedAt: new Date().toISOString(),
-        status: 'PENDING_SYNC',
-      };
+      if (isEditMode && editingOriginalReading) {
+        // En modo edición: si se reemplazó o eliminó la foto original, purgar la foto anterior
+        if (
+          editingOriginalReading.photoUri &&
+          editingOriginalReading.photoUri !== draft.photoUri
+        ) {
+          await deletePhoto(editingOriginalReading.photoUri);
+        }
 
-      await saveConsolidatedReading(consolidated);
+        const updatedReading: ConsolidatedReading = {
+          ...editingOriginalReading,
+          condition: draft.condition,
+          inaccessibilityReason: draft.inaccessibilityReason,
+          damageDescription: draft.damageDescription,
+          currentReading: draft.currentReading,
+          consumption: draft.consumption,
+          isAnomaly: draft.isAnomaly,
+          anomalyConfirmed: draft.anomalyConfirmed,
+          photoUri: draft.photoUri,
+          status: editingOriginalReading.status, // Conserva PENDING_VERIFICATION o PENDING_SYNC
+        };
+
+        await updateConsolidatedReading(updatedReading);
+      } else {
+        const consolidated: ConsolidatedReading = {
+          id: `READ-${Date.now()}-${draft.meterCode}`,
+          meterCode: draft.meterCode,
+          condition: draft.condition,
+          inaccessibilityReason: draft.inaccessibilityReason,
+          damageDescription: draft.damageDescription,
+          currentReading: draft.currentReading,
+          previousReading: draft.previousReading,
+          averageConsumption: draft.averageConsumption,
+          consumption: draft.consumption,
+          isAnomaly: draft.isAnomaly,
+          anomalyConfirmed: draft.anomalyConfirmed,
+          photoUri: draft.photoUri,
+          hasNoPreviousData: draft.hasNoPreviousData,
+          capturedAt: new Date().toISOString(),
+          status: draft.hasNoPreviousData ? 'PENDING_VERIFICATION' : 'PENDING_SYNC',
+        };
+
+        await saveConsolidatedReading(consolidated);
+      }
+
       setIsSaving(false);
       return true;
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error al consolidar la lectura:', err);
       setIsSaving(false);
-      setValidationError('No se pudo guardar la lectura en la cola local');
+      setValidationError(err?.message || 'No se pudo guardar la lectura en la cola local');
       return false;
     }
-  }, [draft, requirements]);
+  }, [draft, requirements, isEditMode, editingOriginalReading]);
 
   return {
     currentStep: draft.currentStep,
@@ -324,6 +382,7 @@ export function useReadingWizardController({
     isSaving,
     cameraPermissionDenied,
     validationError,
+    isEditMode,
     setCondition,
     setInaccessibilityReason,
     setDamageDescription,

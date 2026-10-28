@@ -4,6 +4,7 @@ import { sanitizeMeterCodeInput, validateMeterCode, checkMonthlyDuplicate } from
 import { getMeterFromCache, saveMeterToCache } from '@/storage/meter/meterCacheStorage';
 import { fetchMeterFromOffice } from '@/services/officeApi';
 import { fetchCurrentNetworkStatus } from '@/presentation/session/networkMonitor';
+import { getReadingByMeterCode } from '@/storage/reading/readingDraftStorage';
 
 export interface UseMeterSearchControllerReturn {
   meterCodeInput: string;
@@ -75,6 +76,28 @@ export function useMeterSearchController(): UseMeterSearchControllerReturn {
     const code = meterCodeInput.trim();
 
     try {
+      // 0. Prioridad absoluta local: Verificar si ya existe lectura registrada en el terminal (Spec 004 RF-9, RF-17)
+      const localReading = await getReadingByMeterCode(code);
+      if (localReading) {
+        if (localReading.status === 'SUBMITTED') {
+          setDuplicateBlock({
+            hasDuplicate: true,
+            isSubmitted: true,
+            canEditPending: false,
+            message: `El medidor ${code} ya cuenta con una lectura enviada y confirmada en la oficina este mes. Registro inmutable en solo lectura.`,
+          });
+        } else {
+          setDuplicateBlock({
+            hasDuplicate: true,
+            isSubmitted: false,
+            canEditPending: true,
+            message: `El medidor ${code} ya cuenta con una lectura capturada en este dispositivo (${localReading.status === 'PENDING_VERIFICATION' ? 'Pendiente de verificar' : 'Pendiente de enviar'}).`,
+          });
+        }
+        setIsSearching(false);
+        return;
+      }
+
       // 1. Prioridad: Verificar caché de jornada
       const cached = await getMeterFromCache(code);
       if (cached) {

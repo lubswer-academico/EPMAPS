@@ -6,6 +6,9 @@ import {
   saveConsolidatedReading,
   getPendingReadingsCount,
   getPendingReadingsQueue,
+  getReadingById,
+  getReadingByMeterCode,
+  updateConsolidatedReading,
 } from '../readingDraftStorage';
 import { ReadingDraft, ConsolidatedReading } from '../../../domain/reading/types';
 
@@ -131,5 +134,79 @@ describe('Reading Draft & Queue Storage (readingDraftStorage)', () => {
     const queue = await getPendingReadingsQueue();
     expect(queue).toHaveLength(2);
     expect(queue[1].inaccessibilityReason).toBe('Perro bravo');
+  });
+
+  describe('Queue query and in-place update (Spec 004)', () => {
+    const reading1: ConsolidatedReading = {
+      id: 'READ-1',
+      meterCode: 'MED-111111',
+      condition: 'Normal',
+      currentReading: 50,
+      capturedAt: '2026-10-28T10:00:00Z',
+      status: 'PENDING_SYNC',
+      isAnomaly: false,
+      anomalyConfirmed: false,
+      hasNoPreviousData: false,
+    };
+    const reading2: ConsolidatedReading = {
+      id: 'READ-2',
+      meterCode: 'MED-222222',
+      condition: 'Inaccesible',
+      inaccessibilityReason: 'Perro bravo',
+      capturedAt: '2026-10-28T10:15:00Z',
+      status: 'SUBMITTED',
+      isAnomaly: false,
+      anomalyConfirmed: false,
+      hasNoPreviousData: false,
+    };
+
+    beforeEach(async () => {
+      await saveConsolidatedReading(reading1);
+      await saveConsolidatedReading(reading2);
+    });
+
+    it('retrieves reading by id', async () => {
+      const found = await getReadingById('READ-1');
+      expect(found).not.toBeNull();
+      expect(found?.meterCode).toBe('MED-111111');
+
+      const notFound = await getReadingById('NON_EXISTENT');
+      expect(notFound).toBeNull();
+    });
+
+    it('retrieves reading by meterCode', async () => {
+      const found = await getReadingByMeterCode('MED-222222');
+      expect(found).not.toBeNull();
+      expect(found?.id).toBe('READ-2');
+
+      const notFound = await getReadingByMeterCode('MED-999999');
+      expect(notFound).toBeNull();
+    });
+
+    it('updates reading in-place preserving id, original position, and throws if non-existent or SUBMITTED', async () => {
+      const updatedReading1: ConsolidatedReading = {
+        ...reading1,
+        currentReading: 65,
+        consumption: 15,
+      };
+
+      await updateConsolidatedReading(updatedReading1);
+
+      const queue = await getPendingReadingsQueue();
+      expect(queue).toHaveLength(2);
+      expect(queue[0].id).toBe('READ-1');
+      expect(queue[0].currentReading).toBe(65);
+      expect(queue[1].id).toBe('READ-2'); // position preserved
+
+      // Cannot update non-existent
+      await expect(
+        updateConsolidatedReading({ ...reading1, id: 'GHOST-ID' })
+      ).rejects.toThrow('No se encontró la lectura con id GHOST-ID en la cola local.');
+
+      // Cannot update SUBMITTED
+      await expect(
+        updateConsolidatedReading({ ...reading2, inaccessibilityReason: 'Reja cerrada' })
+      ).rejects.toThrow('No es posible modificar una lectura ya enviada a la oficina.');
+    });
   });
 });

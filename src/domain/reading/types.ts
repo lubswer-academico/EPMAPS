@@ -36,6 +36,10 @@ export interface ReadingDraft {
   updatedAt: string;
 }
 
+export type ReadingStatus = 'PENDING_VERIFICATION' | 'PENDING_SYNC' | 'SUBMITTED';
+
+export type QueueFilter = 'all' | 'pending' | 'submitted';
+
 export interface ConsolidatedReading {
   id: string;
   meterCode: string;
@@ -51,7 +55,9 @@ export interface ConsolidatedReading {
   photoUri?: string | null;
   hasNoPreviousData: boolean;
   capturedAt: string;
-  status: 'PENDING_SYNC';
+  status: ReadingStatus;
+  updatedAt?: string;
+  syncedAt?: string;
 }
 
 export interface ReadingValidationResult {

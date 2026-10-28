@@ -46,6 +46,15 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
+            style={styles.queueButton}
+            onPress={() => router.push('/reading-queue')}
+            accessibilityRole="button"
+            accessibilityLabel="Bandeja de Lecturas"
+          >
+            <Text style={styles.queueButtonText}>📋 Bandeja de Lecturas</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={styles.logoutButton}
             onPress={handleLogout}
             accessibilityRole="button"
@@ -110,6 +119,20 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   searchMeterButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  queueButton: {
+    minHeight: 48,
+    backgroundColor: '#0288D1',
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  queueButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',

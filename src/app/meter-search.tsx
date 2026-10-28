@@ -202,11 +202,11 @@ export default function MeterSearchScreen() {
             {duplicateBlock.canEditPending ? (
               <TouchableOpacity
                 style={styles.editPendingButton}
-                onPress={() => router.push('/home')}
+                onPress={() => router.push('/reading-queue')}
                 accessibilityRole="button"
                 accessibilityLabel="Ver o editar lectura pendiente"
               >
-                <Text style={styles.editPendingButtonText}>Ver / Editar lectura pendiente</Text>
+                <Text style={styles.editPendingButtonText}>Ver / Editar en Bandeja de Lecturas</Text>
               </TouchableOpacity>
             ) : null}
           </View>

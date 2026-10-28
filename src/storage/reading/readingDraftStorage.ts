@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ReadingDraft, ConsolidatedReading } from '../../domain/reading/types';
+import { applyReadingUpdate } from '../../domain/readingQueue/queueRules';
 
 export const DRAFTS_STORAGE_KEY = 'epmaps_reading_drafts_v1';
 export const QUEUE_STORAGE_KEY = 'epmaps_pending_readings_queue_v1';
@@ -102,4 +103,52 @@ export async function getPendingReadingsCount(): Promise<number> {
     console.error('Error al obtener conteo de lecturas pendientes:', error);
     return 0;
   }
+}
+
+/**
+ * Recupera una lectura consolidada por su id único.
+ */
+export async function getReadingById(id: string): Promise<ConsolidatedReading | null> {
+  try {
+    const queue = await getPendingReadingsQueue();
+    const found = queue.find(r => r.id === id);
+    return found || null;
+  } catch (error) {
+    console.error(`Error al obtener lectura con id ${id}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Recupera una lectura consolidada por su código de medidor.
+ */
+export async function getReadingByMeterCode(meterCode: string): Promise<ConsolidatedReading | null> {
+  try {
+    const queue = await getPendingReadingsQueue();
+    const found = queue.find(r => r.meterCode === meterCode);
+    return found || null;
+  } catch (error) {
+    console.error(`Error al obtener lectura para medidor ${meterCode}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Actualiza una lectura existente in-place en la cola local, preservando su id, posición y capturedAt.
+ * Lanza error si la lectura no existe o si se encuentra en estado 'SUBMITTED'.
+ */
+export async function updateConsolidatedReading(updated: ConsolidatedReading): Promise<void> {
+  const queue = await getPendingReadingsQueue();
+  const index = queue.findIndex(r => r.id === updated.id);
+
+  if (index === -1) {
+    throw new Error(`No se encontró la lectura con id ${updated.id} en la cola local.`);
+  }
+
+  const existing = queue[index];
+  // applyReadingUpdate valida inmutabilidad (SUBMITTED) y preserva id, meterCode, capturedAt
+  const updatedEntity = applyReadingUpdate(existing, updated);
+
+  queue[index] = updatedEntity;
+  await AsyncStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(queue));
 }

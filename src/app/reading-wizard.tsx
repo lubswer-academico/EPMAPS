@@ -23,12 +23,14 @@ export default function ReadingWizardScreen() {
     previousReading?: string;
     averageConsumption?: string;
     hasNoPreviousData?: string;
+    editingId?: string;
   }>();
 
   const meterCode = params.meterCode || 'MED-000000';
   const previousReading = params.previousReading ? Number(params.previousReading) : null;
   const averageConsumption = params.averageConsumption ? Number(params.averageConsumption) : null;
   const hasNoPreviousData = params.hasNoPreviousData === 'true';
+  const editingReadingId = params.editingId;
 
   const {
     currentStep,
@@ -40,6 +42,7 @@ export default function ReadingWizardScreen() {
     isSaving,
     cameraPermissionDenied,
     validationError,
+    isEditMode,
     setCondition,
     setInaccessibilityReason,
     setDamageDescription,
@@ -57,14 +60,17 @@ export default function ReadingWizardScreen() {
     previousReading,
     averageConsumption,
     hasNoPreviousData,
+    editingReadingId,
   });
 
   const handleFinish = async () => {
     const success = await submitFinalReading();
     if (success) {
       Alert.alert(
-        'Lectura Registrada',
-        `La lectura del medidor ${meterCode} ha sido guardada en la cola local de pendientes.`,
+        isEditMode ? 'Lectura Actualizada' : 'Lectura Registrada',
+        isEditMode
+          ? `La corrección para el medidor ${meterCode} ha sido guardada en la cola local.`
+          : `La lectura del medidor ${meterCode} ha sido guardada en la cola local de pendientes.`,
         [
           {
             text: 'Aceptar',
@@ -80,7 +86,7 @@ export default function ReadingWizardScreen() {
       <GlobalStatusBar />
 
       {/* Modal/Banner de detección de borrador previo */}
-      {hasExistingDraft ? (
+      {hasExistingDraft && !isEditMode ? (
         <View style={styles.draftModalContainer}>
           <View style={styles.draftModalCard}>
             <Text style={styles.draftModalTitle}>Borrador Pendiente Detectado</Text>
@@ -121,7 +127,7 @@ export default function ReadingWizardScreen() {
           >
             <Text style={styles.backButtonText}>← Regresar</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>Toma de Lectura</Text>
+          <Text style={styles.title}>{isEditMode ? 'Editar Lectura' : 'Toma de Lectura'}</Text>
           <Text style={styles.subtitle}>Medidor: {meterCode}</Text>
         </View>
 

@@ -1,6 +1,6 @@
 # Spec 004 - Bandeja de lecturas offline, registro sin señal y corrección de lecturas no enviadas
 
-Estado: borrador
+Estado: aprobada
 HU de origen: docs/historias/HU-004.md
 
 ## Contexto y objetivo
