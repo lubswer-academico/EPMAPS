@@ -32,13 +32,13 @@ export default function MeterSearchScreen() {
   } = useMeterSearchController();
 
   const handleNavigateToCapture = (hasPriorData: boolean) => {
-    // Listo para transicionar a la pantalla de captura (HU-003)
-    // En obra blanca mostramos el estado de confirmación
     router.push({
-      pathname: '/home',
+      pathname: '/reading-wizard',
       params: {
-        capturedMeterCode: meterCodeInput,
-        hasPriorData: hasPriorData ? 'true' : 'false',
+        meterCode: meterData?.code || meterCodeInput,
+        previousReading: meterData ? String(meterData.lastReading.value) : undefined,
+        averageConsumption: meterData ? String(meterData.averageConsumption) : undefined,
+        hasNoPreviousData: hasPriorData ? 'false' : 'true',
       },
     });
   };

@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { MeterRecord } from '../domain/meter/types';
 
-const DEFAULT_API_BASE_URL = 'https://67bc8247ed4861e07b39ea36.mockapi.io/api/v1';
+const DEFAULT_API_BASE_URL = 'https://6ae1d04bbbb541292299330d.mockapi.io';
 
 export const officeHttpClient: AxiosInstance = axios.create({
   baseURL: process.env.EXPO_PUBLIC_OFFICE_API_URL || DEFAULT_API_BASE_URL,
