@@ -2,18 +2,20 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas.
 
 ## Estado actual
-- Fase: Planificación Técnica (`sdd-plan`) completada.
+- Fase: Decisiones ADR (`sdd-adr`) culminada con éxito.
 - HU activa: HU-001 (Inicio de sesión del técnico y barra de estado global).
-- `specs/001/plan.md` y `specs/001/tasks.md` generados (máximo 10 tareas).
+- `specs/001/plan.md` pasa a `Estado del Plan: Aprobado`.
+- Documentos generados: `docs/adr/ADR-001`, `ADR-002` y `ADR-003`.
 
 ## Decisiones (y por qué)
-- D1-D4 en `specs/001/decisiones.md`.
-- Necesidades técnicas declaradas en `plan.md` (# Decisiones ADR): ADR-REQ-01 (almacenamiento clave-valor tolerante a reinicios), ADR-REQ-02 (monitoreo de conectividad en tiempo real) y ADR-REQ-03 (arnés de pruebas automatizadas con Jest).
+- ADR-001: `@react-native-async-storage/async-storage` para persistencia clave-valor ligera de sesión.
+- ADR-002: `@react-native-community/netinfo` para suscripción nativa instantánea sin gasto de batería/datos.
+- ADR-003: `jest-expo` + `jest` como arnés de pruebas TDD unitarias con soporte TypeScript.
 
 ## Aprendizajes y errores a evitar
-- No nombrar librerías npm en `plan.md` ni `tasks.md`; mantener la selección formal en manos de `sdd-adr`.
-- El plan permanece en estado pendiente hasta resolver las decisiones ADR con el usuario.
+- SQLite y React Query Persist descartados para HU-001 por sobreingeniería y naturaleza de estado local de sesión.
+- Recordar al usuario completar la sección `## Uso de IA` en cada ADR para su defensa técnica.
 
 ## Próximos pasos
-- Invocar al subagente `/sdd-adr 001` para debatir y resolver formalmente ADR-REQ-01, ADR-REQ-02 y ADR-REQ-03 en `docs/adr/`.
+- Ejecutar `/sdd-implement 001` (subagente `sdd-implement`) para instalar dependencias aprobadas y ejecutar las tareas T1 a T10 bajo TDD estricto en obra blanca.
 

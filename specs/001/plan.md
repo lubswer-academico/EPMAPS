@@ -150,3 +150,10 @@ Framework de pruebas: Jest con soporte de TypeScript.
 - **Problema a resolver:** Ejecutar de forma automatizada las pruebas unitarias de lógica pura y contratos de persistencia con soporte para TypeScript, garantizando la cobertura de los requisitos funcionales antes de iniciar la implementación (TDD) (Constitución P4, AGENTS.md).
 - **Capacidades requeridas:** Motor de pruebas automatizadas compatible con TypeScript, tipado estático, capacidades de mocking para contratos de persistencia y temporizadores, ejecutable mediante `npx jest`.
 - **Requisitos trazados:** RF-1 a RF-7; RNF-1, RNF-4.
+- **Se va a utilizar:** `jest-expo`, `jest` y `@types/jest` como devDependencies.
+- **Trazabilidad:** Resuelto en docs/adr/ADR-003-jest-expo-testing.md.
+- **Comando de instalación:** `npx expo install -- --save-dev jest-expo jest @types/jest`
+
+---
+
+*Estado del Plan: Aprobado (todas las Decisiones ADR resueltas formalmente en docs/adr/). Listo para iniciar la implementación.*
