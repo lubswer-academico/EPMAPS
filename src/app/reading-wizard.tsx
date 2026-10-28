@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { GlobalStatusBar } from '../components/GlobalStatusBar';
 import { useReadingWizardController } from '../presentation/reading/useReadingWizardController';
+import { requestBackgroundSync } from '../presentation/sync/useSyncEngine';
 import { MeterCondition } from '../domain/reading/types';
 
 export default function ReadingWizardScreen() {
@@ -66,6 +67,9 @@ export default function ReadingWizardScreen() {
   const handleFinish = async () => {
     const success = await submitFinalReading();
     if (success) {
+      // Intento silencioso en segundo plano si hay red disponible (HU-005)
+      requestBackgroundSync();
+
       Alert.alert(
         isEditMode ? 'Lectura Actualizada' : 'Lectura Registrada',
         isEditMode

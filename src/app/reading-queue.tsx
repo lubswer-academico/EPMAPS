@@ -6,16 +6,22 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { GlobalStatusBar } from '@/components/GlobalStatusBar';
 import { useReadingQueueController } from '@/presentation/readingQueue/useReadingQueueController';
+import { useSyncEngine } from '@/presentation/sync/useSyncEngine';
+import { useGlobalStatusController } from '@/presentation/session/useGlobalStatusController';
+import { deleteConsolidatedReading } from '@/storage/reading/readingDraftStorage';
+import { deletePhoto } from '@/services/photo/photoStorageService';
 import { formatReadingStatusLabel } from '@/domain/readingQueue/queueRules';
 import { ConsolidatedReading, QueueFilter } from '@/domain/reading/types';
 
 export default function ReadingQueueScreen() {
   const router = useRouter();
+  const { isOnline } = useGlobalStatusController();
   const {
     filteredReadings,
     filter,
@@ -23,6 +29,35 @@ export default function ReadingQueueScreen() {
     setFilter,
     loadQueue,
   } = useReadingQueueController();
+
+  const { isSyncing, syncSummary, syncError } = useSyncEngine(() => {
+    loadQueue();
+  });
+
+  const handleDiscardReading = (item: ConsolidatedReading) => {
+    Alert.alert(
+      'Descartar lectura',
+      `¿Desea descartar la lectura del medidor ${item.meterCode}? Se eliminará permanentemente del dispositivo y se borrará su fotografía.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Descartar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              if (item.photoUri) {
+                await deletePhoto(item.photoUri);
+              }
+              await deleteConsolidatedReading(item.id);
+              await loadQueue();
+            } catch (err: any) {
+              Alert.alert('Error', err?.message || 'No se pudo descartar la lectura.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -36,6 +71,8 @@ export default function ReadingQueueScreen() {
         return styles.badgeVerification;
       case 'PENDING_SYNC':
         return styles.badgeSync;
+      case 'REQUIRES_ATTENTION':
+        return styles.badgeAttention;
       case 'SUBMITTED':
         return styles.badgeSubmitted;
     }
@@ -47,6 +84,8 @@ export default function ReadingQueueScreen() {
         return styles.badgeTextVerification;
       case 'PENDING_SYNC':
         return styles.badgeTextSync;
+      case 'REQUIRES_ATTENTION':
+        return styles.badgeTextAttention;
       case 'SUBMITTED':
         return styles.badgeTextSubmitted;
     }
@@ -68,10 +107,24 @@ export default function ReadingQueueScreen() {
       ? `${item.currentReading} m³`
       : 'Sin lectura';
 
+    const isRequiresAttention = item.status === 'REQUIRES_ATTENTION';
+
     return (
       <TouchableOpacity
-        style={styles.card}
-        onPress={() => router.push({ pathname: '/reading-detail', params: { id: item.id } })}
+        style={[styles.card, isRequiresAttention && styles.cardAttention]}
+        onPress={() => {
+          if (isRequiresAttention) {
+            router.push({
+              pathname: '/reading-wizard',
+              params: {
+                meterCode: item.meterCode,
+                editingId: item.id,
+              },
+            });
+          } else {
+            router.push({ pathname: '/reading-detail', params: { id: item.id } });
+          }
+        }}
         accessibilityRole="button"
         accessibilityLabel={`Medidor ${item.meterCode}, estado ${formatReadingStatusLabel(item.status)}`}
       >
@@ -83,6 +136,14 @@ export default function ReadingQueueScreen() {
             </Text>
           </View>
         </View>
+
+        {isRequiresAttention ? (
+          <View style={styles.attentionNotice}>
+            <Text style={styles.attentionNoticeText}>
+              ⚠️ {item.requiresAttentionReason || 'Se detectó anomalía no confirmada o inconsistencia. Toque aquí para revisar o subsanar.'}
+            </Text>
+          </View>
+        ) : null}
 
         <View style={styles.cardBody}>
           <View style={styles.dataRow}>
@@ -107,6 +168,19 @@ export default function ReadingQueueScreen() {
             </Text>
           </View>
         </View>
+
+        {isRequiresAttention ? (
+          <View style={styles.cardActionsRow}>
+            <TouchableOpacity
+              style={styles.cardDiscardButton}
+              onPress={() => handleDiscardReading(item)}
+              accessibilityRole="button"
+              accessibilityLabel={`Descartar lectura del medidor ${item.meterCode}`}
+            >
+              <Text style={styles.cardDiscardButtonText}>🗑️ Descartar lectura</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </TouchableOpacity>
     );
   };
@@ -133,6 +207,36 @@ export default function ReadingQueueScreen() {
         <Text style={styles.title}>Bandeja de Lecturas</Text>
         <Text style={styles.subtitle}>Registro de capturas del mes</Text>
       </View>
+
+      {/* Indicador de Sincronización Automática en Segundo Plano & Avisos */}
+      {isSyncing ? (
+        <View style={styles.syncStatusBanner}>
+          <ActivityIndicator size="small" color="#005C8A" />
+          <Text style={styles.syncStatusText}>Sincronizando lecturas automáticamente con oficina...</Text>
+        </View>
+      ) : null}
+
+      {!isOnline ? (
+        <View style={styles.offlineNoticeContainer}>
+          <Text style={styles.offlineNotice}>
+            Modo sin conexión. La cola se enviará automáticamente al recuperar la señal.
+          </Text>
+        </View>
+      ) : null}
+
+      {syncError ? (
+        <View style={styles.errorNotice}>
+          <Text style={styles.errorNoticeText}>⚠️ {syncError}</Text>
+        </View>
+      ) : null}
+
+      {syncSummary && !isSyncing && syncSummary.sent > 0 ? (
+        <View style={styles.summaryNotice}>
+          <Text style={styles.summaryNoticeText}>
+            ✓ Sincronización automática: {syncSummary.sent} enviadas al sistema central.
+          </Text>
+        </View>
+      ) : null}
 
       {/* Selector de Filtros */}
       <View style={styles.tabContainer}>
@@ -274,6 +378,9 @@ const styles = StyleSheet.create({
   badgeSync: {
     backgroundColor: '#FFF8E1',
   },
+  badgeAttention: {
+    backgroundColor: '#FFF3E0',
+  },
   badgeSubmitted: {
     backgroundColor: '#E8F5E9',
   },
@@ -287,11 +394,110 @@ const styles = StyleSheet.create({
   badgeTextSync: {
     color: '#F57F17',
   },
+  badgeTextAttention: {
+    color: '#E65100',
+  },
   badgeTextSubmitted: {
     color: '#2E7D32',
   },
+  syncStatusBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E1F5FE',
+    borderWidth: 1,
+    borderColor: '#81D4FA',
+    padding: 10,
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginBottom: 10,
+    gap: 8,
+  },
+  syncStatusText: {
+    fontSize: 13,
+    color: '#0277BD',
+    fontWeight: '600',
+  },
+  offlineNoticeContainer: {
+    backgroundColor: '#FFEBEE',
+    padding: 8,
+    borderRadius: 6,
+    marginHorizontal: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#FFCDD2',
+  },
+  offlineNotice: {
+    fontSize: 12,
+    color: '#D32F2F',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  errorNotice: {
+    backgroundColor: '#FFEBEE',
+    padding: 10,
+    borderRadius: 6,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#EF9A9A',
+  },
+  errorNoticeText: {
+    fontSize: 12,
+    color: '#C62828',
+    fontWeight: '600',
+  },
+  summaryNotice: {
+    backgroundColor: '#E8F5E9',
+    padding: 10,
+    borderRadius: 6,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#A5D6A7',
+  },
+  summaryNoticeText: {
+    fontSize: 12,
+    color: '#2E7D32',
+    fontWeight: '600',
+  },
+  cardAttention: {
+    borderColor: '#FF9800',
+    borderWidth: 2,
+    backgroundColor: '#FFFDE7',
+  },
+  attentionNotice: {
+    backgroundColor: '#FFF3E0',
+    padding: 8,
+    borderRadius: 6,
+    marginBottom: 8,
+  },
+  attentionNoticeText: {
+    fontSize: 12,
+    color: '#E65100',
+    fontWeight: '600',
+  },
   cardBody: {
     gap: 4,
+  },
+  cardActionsRow: {
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#FFE0B2',
+    alignItems: 'flex-end',
+  },
+  cardDiscardButton: {
+    minHeight: 48,
+    backgroundColor: '#FFF1F0',
+    borderWidth: 1,
+    borderColor: '#FFA39E',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardDiscardButtonText: {
+    fontSize: 13,
+    color: '#CF1322',
+    fontWeight: '700',
   },
   dataRow: {
     flexDirection: 'row',

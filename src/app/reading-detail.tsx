@@ -7,11 +7,13 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { GlobalStatusBar } from '@/components/GlobalStatusBar';
-import { getReadingById } from '@/storage/reading/readingDraftStorage';
+import { getReadingById, deleteConsolidatedReading } from '@/storage/reading/readingDraftStorage';
+import { deletePhoto } from '@/services/photo/photoStorageService';
 import { formatReadingStatusLabel, isReadingEditable } from '@/domain/readingQueue/queueRules';
 import { ConsolidatedReading } from '@/domain/reading/types';
 
@@ -101,9 +103,65 @@ export default function ReadingDetailScreen() {
     });
   };
 
+  const handleDeleteReading = () => {
+    Alert.alert(
+      'Descartar lectura',
+      `¿Está seguro de descartar y eliminar permanentemente esta lectura del medidor ${reading.meterCode}? Se borrará la fotografía asociada y se actualizará la cola.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Descartar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              if (reading.photoUri) {
+                await deletePhoto(reading.photoUri);
+              }
+              await deleteConsolidatedReading(reading.id);
+              Alert.alert('Lectura descartada', 'La lectura fue eliminada de la cola local.', [
+                {
+                  text: 'Aceptar',
+                  onPress: () => router.replace('/reading-queue'),
+                },
+              ]);
+            } catch (err: any) {
+              Alert.alert('Error', err?.message || 'No se pudo descartar la lectura.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const formattedCapturedAt = new Date(reading.capturedAt).toLocaleString('es-EC');
   const formattedUpdatedAt = reading.updatedAt ? new Date(reading.updatedAt).toLocaleString('es-EC') : null;
   const formattedSyncedAt = reading.syncedAt ? new Date(reading.syncedAt).toLocaleString('es-EC') : null;
+
+  const getStatusBadgeStyle = (status: ConsolidatedReading['status']) => {
+    switch (status) {
+      case 'PENDING_VERIFICATION':
+        return styles.badgeVerification;
+      case 'PENDING_SYNC':
+        return styles.badgePending;
+      case 'REQUIRES_ATTENTION':
+        return styles.badgeAttention;
+      case 'SUBMITTED':
+        return styles.badgeSubmitted;
+    }
+  };
+
+  const getStatusTextStyle = (status: ConsolidatedReading['status']) => {
+    switch (status) {
+      case 'PENDING_VERIFICATION':
+        return styles.badgeTextVerification;
+      case 'PENDING_SYNC':
+        return styles.badgeTextPending;
+      case 'REQUIRES_ATTENTION':
+        return styles.badgeTextAttention;
+      case 'SUBMITTED':
+        return styles.badgeTextSubmitted;
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -134,12 +192,23 @@ export default function ReadingDetailScreen() {
           </View>
         ) : null}
 
+        {/* Banner si requiere atención por anomalía imprevista o medidor inexistente */}
+        {reading.status === 'REQUIRES_ATTENTION' ? (
+          <View style={styles.attentionBanner}>
+            <Text style={styles.attentionBannerTitle}>⚠️ Requiere Atención en Campo</Text>
+            <Text style={styles.attentionBannerText}>
+              {reading.requiresAttentionReason ||
+                'Al cotejar esta lectura con la oficina se detectó una discrepancia o anomalía de consumo. Por favor revise o edite el registro.'}
+            </Text>
+          </View>
+        ) : null}
+
         {/* Tarjeta de Datos de la Lectura */}
         <View style={styles.card}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Información del Registro</Text>
-            <View style={[styles.statusBadge, isSubmitted ? styles.badgeSubmitted : styles.badgePending]}>
-              <Text style={[styles.statusBadgeText, isSubmitted ? styles.badgeTextSubmitted : styles.badgeTextPending]}>
+            <View style={[styles.statusBadge, getStatusBadgeStyle(reading.status)]}>
+              <Text style={[styles.statusBadgeText, getStatusTextStyle(reading.status)]}>
                 {formatReadingStatusLabel(reading.status)}
               </Text>
             </View>
@@ -239,16 +308,27 @@ export default function ReadingDetailScreen() {
           )}
         </View>
 
-        {/* Acciones de Edición (Habilitada solo si es editable) */}
+        {/* Acciones de Edición y Descarte (Habilitadas solo si es editable) */}
         {editable ? (
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={handleEditReading}
-            accessibilityRole="button"
-            accessibilityLabel="Editar Lectura"
-          >
-            <Text style={styles.editButtonText}>✏️ Editar Lectura</Text>
-          </TouchableOpacity>
+          <View style={styles.actionButtonsContainer}>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={handleEditReading}
+              accessibilityRole="button"
+              accessibilityLabel="Editar Lectura"
+            >
+              <Text style={styles.editButtonText}>✏️ Editar Lectura</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={handleDeleteReading}
+              accessibilityRole="button"
+              accessibilityLabel="Descartar lectura"
+            >
+              <Text style={styles.deleteButtonText}>🗑️ Descartar lectura</Text>
+            </TouchableOpacity>
+          </View>
         ) : null}
       </ScrollView>
     </SafeAreaView>
@@ -335,6 +415,12 @@ const styles = StyleSheet.create({
   badgePending: {
     backgroundColor: '#FFF8E1',
   },
+  badgeVerification: {
+    backgroundColor: '#EDE7F6',
+  },
+  badgeAttention: {
+    backgroundColor: '#FFF3E0',
+  },
   badgeSubmitted: {
     backgroundColor: '#E8F5E9',
   },
@@ -345,8 +431,33 @@ const styles = StyleSheet.create({
   badgeTextPending: {
     color: '#F57F17',
   },
+  badgeTextVerification: {
+    color: '#4527A0',
+  },
+  badgeTextAttention: {
+    color: '#E65100',
+  },
   badgeTextSubmitted: {
     color: '#2E7D32',
+  },
+  attentionBanner: {
+    backgroundColor: '#FFF3E0',
+    borderWidth: 1,
+    borderColor: '#FFB74D',
+    borderRadius: 8,
+    padding: 14,
+    marginBottom: 16,
+  },
+  attentionBannerTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#E65100',
+    marginBottom: 4,
+  },
+  attentionBannerText: {
+    fontSize: 13,
+    color: '#BF360C',
+    lineHeight: 18,
   },
   dataRow: {
     flexDirection: 'row',
@@ -390,6 +501,10 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginVertical: 6,
   },
+  actionButtonsContainer: {
+    marginTop: 8,
+    gap: 12,
+  },
   editButton: {
     minHeight: 48,
     backgroundColor: '#0288D1',
@@ -397,10 +512,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 16,
-    marginTop: 8,
   },
   editButtonText: {
     color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  deleteButton: {
+    minHeight: 48,
+    backgroundColor: '#FFF1F0',
+    borderWidth: 1,
+    borderColor: '#FFA39E',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  deleteButtonText: {
+    color: '#CF1322',
     fontSize: 16,
     fontWeight: '700',
   },

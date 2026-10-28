@@ -36,7 +36,22 @@ export interface ReadingDraft {
   updatedAt: string;
 }
 
-export type ReadingStatus = 'PENDING_VERIFICATION' | 'PENDING_SYNC' | 'SUBMITTED';
+export type ReadingStatus = 'PENDING_VERIFICATION' | 'PENDING_SYNC' | 'REQUIRES_ATTENTION' | 'SUBMITTED';
+
+export interface OfficeSyncPayload {
+  clientReadingId: string;
+  meterCode: string;
+  condition: MeterCondition;
+  currentReading: number | null;
+  consumption: number | null;
+  inaccessibilityReason?: string;
+  damageDescription?: string;
+  isAnomaly: boolean;
+  anomalyConfirmed: boolean;
+  localPhotoUri?: string | null;
+  capturedAt: string;
+  syncedAt: string;
+}
 
 export type QueueFilter = 'all' | 'pending' | 'submitted';
 
@@ -56,6 +71,7 @@ export interface ConsolidatedReading {
   hasNoPreviousData: boolean;
   capturedAt: string;
   status: ReadingStatus;
+  requiresAttentionReason?: string;
   updatedAt?: string;
   syncedAt?: string;
 }

@@ -12,7 +12,7 @@ export function filterReadings(
 ): ConsolidatedReading[] {
   if (filter === 'pending') {
     return readings.filter(
-      r => r.status === 'PENDING_VERIFICATION' || r.status === 'PENDING_SYNC'
+      r => r.status === 'PENDING_VERIFICATION' || r.status === 'PENDING_SYNC' || r.status === 'REQUIRES_ATTENTION'
     );
   }
   if (filter === 'submitted') {
@@ -39,6 +39,8 @@ export function formatReadingStatusLabel(status: ReadingStatus): string {
       return 'Pendiente de verificar';
     case 'PENDING_SYNC':
       return 'Pendiente de enviar';
+    case 'REQUIRES_ATTENTION':
+      return 'Requiere atención';
     case 'SUBMITTED':
       return 'Enviada';
   }
@@ -76,7 +78,5 @@ export function applyReadingUpdate(
  * Retorna el número total de lecturas pendientes de procesar o enviar.
  */
 export function getPendingCount(readings: ConsolidatedReading[]): number {
-  return readings.filter(
-    r => r.status === 'PENDING_VERIFICATION' || r.status === 'PENDING_SYNC'
-  ).length;
+  return readings.filter(r => r.status !== 'SUBMITTED').length;
 }

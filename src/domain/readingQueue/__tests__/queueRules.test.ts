@@ -107,6 +107,10 @@ describe('Queue Rules Domain Logic (queueRules)', () => {
     it('maps SUBMITTED to "Enviada"', () => {
       expect(formatReadingStatusLabel('SUBMITTED')).toBe('Enviada');
     });
+
+    it('maps REQUIRES_ATTENTION to "Requiere atención"', () => {
+      expect(formatReadingStatusLabel('REQUIRES_ATTENTION')).toBe('Requiere atención');
+    });
   });
 
   describe('isReadingEditable (Inmutabilidad)', () => {
@@ -116,6 +120,14 @@ describe('Queue Rules Domain Logic (queueRules)', () => {
 
     it('returns true for PENDING_VERIFICATION reading', () => {
       expect(isReadingEditable(sampleReadings[1])).toBe(true);
+    });
+
+    it('returns true for REQUIRES_ATTENTION reading', () => {
+      const attentionReading: ConsolidatedReading = {
+        ...sampleReadings[0],
+        status: 'REQUIRES_ATTENTION',
+      };
+      expect(isReadingEditable(attentionReading)).toBe(true);
     });
 
     it('returns false for SUBMITTED reading', () => {
@@ -139,6 +151,17 @@ describe('Queue Rules Domain Logic (queueRules)', () => {
       expect(updated.updatedAt).toBeDefined();
     });
 
+    it('ignora cambios en meterCode preservando el original del registro', () => {
+      const original = sampleReadings[0];
+      const updated = applyReadingUpdate(original, {
+        meterCode: 'MED-999999',
+      });
+
+      expect(updated.id).toBe(original.id);
+      expect(updated.meterCode).toBe(original.meterCode);
+      expect(updated.capturedAt).toBe(original.capturedAt);
+    });
+
     it('throws error if attempting to update a SUBMITTED reading', () => {
       const submitted = sampleReadings[2];
       expect(() => {
@@ -148,6 +171,14 @@ describe('Queue Rules Domain Logic (queueRules)', () => {
   });
 
   describe('getPendingCount', () => {
+    it('counts all readings with status !== SUBMITTED including REQUIRES_ATTENTION', () => {
+      const readingsWithAttention: ConsolidatedReading[] = [
+        ...sampleReadings,
+        { ...sampleReadings[0], id: 'read-4', status: 'REQUIRES_ATTENTION' },
+      ];
+      expect(getPendingCount(readingsWithAttention)).toBe(3);
+    });
+
     it('counts all readings with status !== SUBMITTED', () => {
       expect(getPendingCount(sampleReadings)).toBe(2);
     });

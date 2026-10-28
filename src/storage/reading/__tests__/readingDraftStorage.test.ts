@@ -9,6 +9,10 @@ import {
   getReadingById,
   getReadingByMeterCode,
   updateConsolidatedReading,
+  deleteConsolidatedReading,
+  markReadingAsSubmitted,
+  markReadingAsRequiresAttention,
+  markReadingAsVerifiedSync,
 } from '../readingDraftStorage';
 import { ReadingDraft, ConsolidatedReading } from '../../../domain/reading/types';
 
@@ -207,6 +211,53 @@ describe('Reading Draft & Queue Storage (readingDraftStorage)', () => {
       await expect(
         updateConsolidatedReading({ ...reading2, inaccessibilityReason: 'Reja cerrada' })
       ).rejects.toThrow('No es posible modificar una lectura ya enviada a la oficina.');
+    });
+
+    it('updates status atomically to SUBMITTED and assigns syncedAt', async () => {
+      await markReadingAsSubmitted('READ-1', '2026-10-28T12:00:00.000Z');
+      const reading = await getReadingById('READ-1');
+      expect(reading?.status).toBe('SUBMITTED');
+      expect(reading?.syncedAt).toBe('2026-10-28T12:00:00.000Z');
+    });
+
+    it('updates status atomically to REQUIRES_ATTENTION with recalculated values', async () => {
+      await markReadingAsRequiresAttention('READ-1', {
+        consumption: 150,
+        isAnomaly: true,
+      });
+      const reading = await getReadingById('READ-1');
+      expect(reading?.status).toBe('REQUIRES_ATTENTION');
+      expect(reading?.consumption).toBe(150);
+      expect(reading?.isAnomaly).toBe(true);
+    });
+
+    it('updates status to PENDING_SYNC when verified diferred', async () => {
+      await markReadingAsVerifiedSync('READ-1', {
+        consumption: 20,
+        isAnomaly: false,
+      });
+      const reading = await getReadingById('READ-1');
+      expect(reading?.status).toBe('PENDING_SYNC');
+      expect(reading?.consumption).toBe(20);
+    });
+
+    it('elimina una lectura editable de la cola y preserva las demás', async () => {
+      await deleteConsolidatedReading('READ-1');
+      const queue = await getPendingReadingsQueue();
+      expect(queue).toHaveLength(1);
+      expect(queue[0].id).toBe('READ-2');
+    });
+
+    it('impide eliminar una lectura en estado SUBMITTED', async () => {
+      await expect(deleteConsolidatedReading('READ-2')).rejects.toThrow(
+        'No es posible eliminar una lectura ya enviada a la oficina.'
+      );
+    });
+
+    it('returns only pending count excluding SUBMITTED', async () => {
+      expect(await getPendingReadingsCount()).toBe(1); // READ-1 is pending, READ-2 is SUBMITTED
+      await markReadingAsSubmitted('READ-1');
+      expect(await getPendingReadingsCount()).toBe(0); // All SUBMITTED
     });
   });
 });

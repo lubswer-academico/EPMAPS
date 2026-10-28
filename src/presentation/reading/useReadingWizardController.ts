@@ -328,6 +328,7 @@ export function useReadingWizardController({
 
         const updatedReading: ConsolidatedReading = {
           ...editingOriginalReading,
+          meterCode: editingOriginalReading.meterCode, // Inmutable (KISS / YAGNI)
           condition: draft.condition,
           inaccessibilityReason: draft.inaccessibilityReason,
           damageDescription: draft.damageDescription,
@@ -336,7 +337,12 @@ export function useReadingWizardController({
           isAnomaly: draft.isAnomaly,
           anomalyConfirmed: draft.anomalyConfirmed,
           photoUri: draft.photoUri,
-          status: editingOriginalReading.status, // Conserva PENDING_VERIFICATION o PENDING_SYNC
+          // Si requería atención y se confirmó/subsanó (foto, condición, etc.), regresa a PENDING_VERIFICATION para volver a validarse
+          status:
+            editingOriginalReading.status === 'REQUIRES_ATTENTION'
+              ? 'PENDING_VERIFICATION'
+              : editingOriginalReading.status,
+          requiresAttentionReason: undefined,
         };
 
         await updateConsolidatedReading(updatedReading);

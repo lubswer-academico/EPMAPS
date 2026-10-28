@@ -93,12 +93,12 @@ export async function saveConsolidatedReading(reading: ConsolidatedReading): Pro
 }
 
 /**
- * Retorna la cantidad total de lecturas pendientes de sincronización en la cola local.
+ * Retorna la cantidad total de lecturas pendientes de sincronización en la cola local (excluyendo SUBMITTED).
  */
 export async function getPendingReadingsCount(): Promise<number> {
   try {
     const queue = await getPendingReadingsQueue();
-    return queue.length;
+    return queue.filter(r => r.status !== 'SUBMITTED').length;
   } catch (error) {
     console.error('Error al obtener conteo de lecturas pendientes:', error);
     return 0;
@@ -146,9 +146,100 @@ export async function updateConsolidatedReading(updated: ConsolidatedReading): P
   }
 
   const existing = queue[index];
-  // applyReadingUpdate valida inmutabilidad (SUBMITTED) y preserva id, meterCode, capturedAt
+  // applyReadingUpdate valida inmutabilidad (SUBMITTED) y preserva id y capturedAt (meterCode es subsanable)
   const updatedEntity = applyReadingUpdate(existing, updated);
 
   queue[index] = updatedEntity;
   await AsyncStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(queue));
 }
+
+/**
+ * Marca atómicamente una lectura como enviada (SUBMITTED) con su fecha de sincronización.
+ */
+export async function markReadingAsSubmitted(
+  id: string,
+  syncedAt: string = new Date().toISOString()
+): Promise<void> {
+  const queue = await getPendingReadingsQueue();
+  const index = queue.findIndex(r => r.id === id);
+
+  if (index === -1) {
+    throw new Error(`No se encontró la lectura con id ${id} en la cola local.`);
+  }
+
+  queue[index] = {
+    ...queue[index],
+    status: 'SUBMITTED',
+    syncedAt,
+    updatedAt: new Date().toISOString(),
+  };
+  await AsyncStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(queue));
+}
+
+/**
+ * Marca atómicamente una lectura como REQUIRES_ATTENTION actualizando motivos y consumo.
+ */
+export async function markReadingAsRequiresAttention(
+  id: string,
+  extra?: Partial<ConsolidatedReading>
+): Promise<void> {
+  const queue = await getPendingReadingsQueue();
+  const index = queue.findIndex(r => r.id === id);
+
+  if (index === -1) {
+    throw new Error(`No se encontró la lectura con id ${id} en la cola local.`);
+  }
+
+  queue[index] = {
+    ...queue[index],
+    ...extra,
+    status: 'REQUIRES_ATTENTION',
+    updatedAt: new Date().toISOString(),
+  };
+  await AsyncStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(queue));
+}
+
+/**
+ * Marca atómicamente una lectura como PENDING_SYNC tras verificación diferida exitosa.
+ */
+export async function markReadingAsVerifiedSync(
+  id: string,
+  extra?: Partial<ConsolidatedReading>
+): Promise<void> {
+  const queue = await getPendingReadingsQueue();
+  const index = queue.findIndex(r => r.id === id);
+
+  if (index === -1) {
+    throw new Error(`No se encontró la lectura con id ${id} en la cola local.`);
+  }
+
+  queue[index] = {
+    ...queue[index],
+    ...extra,
+    status: 'PENDING_SYNC',
+    updatedAt: new Date().toISOString(),
+  };
+  await AsyncStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(queue));
+}
+
+/**
+ * Elimina una lectura no enviada de la cola local (por ejemplo, registro huérfano con código inexistente).
+ * Lanza un error si la lectura ya fue enviada (SUBMITTED).
+ */
+export async function deleteConsolidatedReading(id: string): Promise<void> {
+  const queue = await getPendingReadingsQueue();
+  const index = queue.findIndex(r => r.id === id);
+
+  if (index === -1) {
+    throw new Error(`No se encontró la lectura con id ${id} en la cola local.`);
+  }
+
+  if (queue[index].status === 'SUBMITTED') {
+    throw new Error('No es posible eliminar una lectura ya enviada a la oficina.');
+  }
+
+  queue.splice(index, 1);
+  await AsyncStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(queue));
+}
+
+
