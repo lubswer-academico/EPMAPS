@@ -1,9 +1,25 @@
-import { Text, View, StyleSheet } from "react-native";
+import React, { useEffect } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useSessionController } from '@/presentation/session/useSessionController';
 
-export default function Index() {
+export default function IndexScreen() {
+  const router = useRouter();
+  const { isAuthenticated, isLoading } = useSessionController();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (isAuthenticated) {
+        router.replace('/home');
+      } else {
+        router.replace('/login');
+      }
+    }
+  }, [isLoading, isAuthenticated, router]);
+
   return (
     <View style={styles.container}>
-      <Text>Edit src/app/index.tsx to edit this screen EPMAPS.</Text>
+      <ActivityIndicator size="large" color="#0D47A1" />
     </View>
   );
 }
@@ -11,7 +27,8 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F5F5',
   },
 });
