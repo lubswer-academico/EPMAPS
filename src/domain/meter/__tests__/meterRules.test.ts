@@ -3,6 +3,7 @@ import {
   validateMeterCode,
   isCacheEntryExpired,
   checkMonthlyDuplicate,
+  formatMeterStatusLabel,
 } from '../meterRules';
 
 describe('meterRules - Dominio de Medidores', () => {
@@ -124,6 +125,21 @@ describe('meterRules - Dominio de Medidores', () => {
       expect(result.message).toBe(
         'Este medidor ya tiene una lectura registrada en este mes.'
       );
+    });
+  });
+
+  describe('formatMeterStatusLabel', () => {
+    it('debe traducir active, suspended e inactive al español formal', () => {
+      expect(formatMeterStatusLabel('active')).toBe('Activo');
+      expect(formatMeterStatusLabel('suspended')).toBe('Suspendido');
+      expect(formatMeterStatusLabel('inactive')).toBe('Inactivo');
+    });
+
+    it('debe manejar variantes en mayúsculas o valores desconocidos en español', () => {
+      expect(formatMeterStatusLabel('SUSPENDED' as any)).toBe('Suspendido');
+      expect(formatMeterStatusLabel('ACTIVE' as any)).toBe('Activo');
+      expect(formatMeterStatusLabel('INACTIVE' as any)).toBe('Inactivo');
+      expect(formatMeterStatusLabel('Suspendido' as any)).toBe('Suspendido');
     });
   });
 });

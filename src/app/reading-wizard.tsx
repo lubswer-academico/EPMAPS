@@ -111,10 +111,10 @@ export default function ReadingWizardScreen() {
               <Ionicons
                 name="document-text-outline"
                 size={20}
-                color={EPMAPS_COLORS.warning}
+                color={EPMAPS_COLORS.primaryDark}
                 style={styles.alertHeaderIcon}
               />
-              <Text style={styles.draftModalTitle}>Borrador Pendiente Detectado</Text>
+              <Text style={styles.draftModalTitle}>Borrador pendiente detectado</Text>
             </View>
             <Text style={styles.draftModalText}>
               Existe una captura iniciada previamente para el medidor {meterCode}. ¿Desea reanudarla
@@ -131,10 +131,12 @@ export default function ReadingWizardScreen() {
                 <Ionicons
                   name="trash-outline"
                   size={16}
-                  color={EPMAPS_COLORS.textDark}
+                  color={EPMAPS_COLORS.primaryDark}
                   style={styles.buttonIconSmall}
                 />
-                <Text style={styles.discardButtonText}>Descartar borrador</Text>
+                <Text style={styles.discardButtonText} numberOfLines={1}>
+                  Descartar borrador
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.resumeButton}
@@ -149,7 +151,9 @@ export default function ReadingWizardScreen() {
                   color={EPMAPS_COLORS.textInverse}
                   style={styles.buttonIconSmall}
                 />
-                <Text style={styles.resumeButtonText}>Reanudar captura</Text>
+                <Text style={styles.resumeButtonText} numberOfLines={1}>
+                  Reanudar captura
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -166,9 +170,12 @@ export default function ReadingWizardScreen() {
             accessibilityRole="button"
             accessibilityLabel="Regresar a consulta"
           >
-            <View style={styles.backButtonBadge}>
-              <Ionicons name="arrow-back" size={16} color={EPMAPS_COLORS.primaryDark} />
-            </View>
+            <Ionicons
+              name="arrow-back"
+              size={18}
+              color={EPMAPS_COLORS.primaryDark}
+              style={styles.backButtonIcon}
+            />
             <Text style={styles.backButtonText}>Regresar</Text>
           </TouchableOpacity>
 
@@ -189,7 +196,7 @@ export default function ReadingWizardScreen() {
           </View>
         </View>
 
-        {/* Indicador de Pasos del Wizard */}
+        {/* Indicador de Pasos del Wizard (sin numeración artificial 1. 2. 3.) */}
         <View style={styles.stepIndicatorContainer}>
           <View
             style={[
@@ -217,7 +224,7 @@ export default function ReadingWizardScreen() {
                 currentStep > 1 && styles.stepBadgeTextCompleted,
               ]}
             >
-              1. Condición
+              Condición
             </Text>
           </View>
 
@@ -249,7 +256,7 @@ export default function ReadingWizardScreen() {
                 currentStep > 2 && styles.stepBadgeTextCompleted,
               ]}
             >
-              2. Lectura
+              Lectura
             </Text>
           </View>
 
@@ -263,7 +270,7 @@ export default function ReadingWizardScreen() {
               style={styles.stepBadgeIcon}
             />
             <Text style={[styles.stepBadgeText, currentStep === 3 && styles.stepBadgeTextActive]}>
-              3. Foto
+              Evidencia
             </Text>
           </View>
         </View>
@@ -287,7 +294,6 @@ export default function ReadingWizardScreen() {
         {/* CONTENIDO DEL PASO 1: Condición del Medidor */}
         {currentStep === 1 ? (
           <View style={styles.stepContent}>
-            <Text style={styles.stepCategoryLabel}>PASO 1 DE 3 • INSPECCIÓN VISUAL</Text>
             <Text style={styles.stepSectionTitle}>Seleccione la condición física</Text>
 
             <View style={styles.conditionOptions}>
@@ -324,13 +330,13 @@ export default function ReadingWizardScreen() {
             {/* Campo Motivo de Inaccesibilidad */}
             {requirements.reasonRequired ? (
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>MOTIVO DE INACCESIBILIDAD *</Text>
+                <Text style={styles.inputLabel}>Motivo de inaccesibilidad *</Text>
                 <TextInput
                   style={[styles.textInput, styles.textArea]}
                   value={draft.inaccessibilityReason || ''}
                   onChangeText={setInaccessibilityReason}
                   placeholder="Ej. Reja cerrada, perro peligroso, terreno anegado..."
-                  placeholderTextColor={EPMAPS_COLORS.textSubtle}
+                  placeholderTextColor={EPMAPS_COLORS.textMuted}
                   multiline
                   numberOfLines={3}
                   accessibilityLabel="Motivo de inaccesibilidad"
@@ -341,13 +347,13 @@ export default function ReadingWizardScreen() {
             {/* Campo Descripción del Daño */}
             {requirements.damageDescriptionRequired ? (
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>DESCRIPCIÓN DEL DAÑO *</Text>
+                <Text style={styles.inputLabel}>Descripción del daño *</Text>
                 <TextInput
                   style={[styles.textInput, styles.textArea]}
                   value={draft.damageDescription || ''}
                   onChangeText={setDamageDescription}
                   placeholder="Ej. Visor roto, esfera empañada, medidor trabado o manipulado..."
-                  placeholderTextColor={EPMAPS_COLORS.textSubtle}
+                  placeholderTextColor={EPMAPS_COLORS.textMuted}
                   multiline
                   numberOfLines={3}
                   accessibilityLabel="Descripción del daño"
@@ -360,8 +366,7 @@ export default function ReadingWizardScreen() {
         {/* CONTENIDO DEL PASO 2: Lectura Numérica y Consumo */}
         {currentStep === 2 ? (
           <View style={styles.stepContent}>
-            <Text style={styles.stepCategoryLabel}>PASO 2 DE 3 • REGISTRO VOLUMÉTRICO</Text>
-            <Text style={styles.stepSectionTitle}>Ingreso de Lectura Actual</Text>
+            <Text style={styles.stepSectionTitle}>Ingreso de lectura actual</Text>
 
             {requirements.readingDisabled ? (
               <View style={styles.infoBanner}>
@@ -388,12 +393,17 @@ export default function ReadingWizardScreen() {
                         color={EPMAPS_COLORS.textMuted}
                         style={styles.referenceIcon}
                       />
-                      <Text style={styles.referenceLabel}>Lectura anterior:</Text>
+                      <Text style={styles.referenceLabel}>Lectura anterior</Text>
                     </View>
                     <Text style={styles.referenceValue}>
-                      {draft.previousReading !== null && draft.previousReading !== undefined
-                        ? `${draft.previousReading} m³`
-                        : 'Sin datos previos'}
+                      {draft.previousReading !== null && draft.previousReading !== undefined ? (
+                        <>
+                          {draft.previousReading}
+                          <Text style={styles.unitSuffix}> m³</Text>
+                        </>
+                      ) : (
+                        'Sin datos previos'
+                      )}
                     </Text>
                   </View>
 
@@ -407,12 +417,17 @@ export default function ReadingWizardScreen() {
                         color={EPMAPS_COLORS.textMuted}
                         style={styles.referenceIcon}
                       />
-                      <Text style={styles.referenceLabel}>Consumo promedio:</Text>
+                      <Text style={styles.referenceLabel}>Consumo promedio</Text>
                     </View>
                     <Text style={styles.referenceValue}>
-                      {draft.averageConsumption !== null && draft.averageConsumption !== undefined
-                        ? `${draft.averageConsumption} m³/mes`
-                        : 'Sin datos previos'}
+                      {draft.averageConsumption !== null && draft.averageConsumption !== undefined ? (
+                        <>
+                          {draft.averageConsumption}
+                          <Text style={styles.unitSuffix}> m³/mes</Text>
+                        </>
+                      ) : (
+                        'Sin datos previos'
+                      )}
                     </Text>
                   </View>
                 </View>
@@ -420,7 +435,7 @@ export default function ReadingWizardScreen() {
                 {/* Input Lectura */}
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>
-                    LECTURA ACTUAL (M³){requirements.readingRequired ? ' *' : ' (OPCIONAL)'}
+                    Lectura actual (m³){requirements.readingRequired ? ' *' : ' (opcional)'}
                   </Text>
                   <TextInput
                     style={[
@@ -434,7 +449,7 @@ export default function ReadingWizardScreen() {
                     }
                     onChangeText={setCurrentReading}
                     placeholder="0"
-                    placeholderTextColor={EPMAPS_COLORS.textSubtle}
+                    placeholderTextColor={EPMAPS_COLORS.textMuted}
                     keyboardType="number-pad"
                     accessibilityLabel="Lectura actual en metros cúbicos"
                   />
@@ -563,8 +578,7 @@ export default function ReadingWizardScreen() {
         {/* CONTENIDO DEL PASO 3: Fotografía y Resumen */}
         {currentStep === 3 ? (
           <View style={styles.stepContent}>
-            <Text style={styles.stepCategoryLabel}>PASO 3 DE 3 • RESPALDO Y CIERRE</Text>
-            <Text style={styles.stepSectionTitle}>Evidencia Fotográfica</Text>
+            <Text style={styles.stepSectionTitle}>Evidencia fotográfica</Text>
 
             {requirements.photoRequired ? (
               <View style={styles.requirementBanner}>
@@ -794,20 +808,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: EPMAPS_SPACING.xs,
     alignSelf: 'flex-start',
+    paddingRight: EPMAPS_SPACING.md,
   },
-  backButtonBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: EPMAPS_RADII.sm,
-    backgroundColor: EPMAPS_COLORS.bgBlue,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: EPMAPS_SPACING.sm,
+  backButtonIcon: {
+    marginRight: 6,
   },
   backButtonText: {
     fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
     color: EPMAPS_COLORS.primaryDark,
-    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
   },
   headerTitleRow: {
     flexDirection: 'row',
@@ -930,11 +939,11 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
   },
-  // Modal/Banner de Borrador en Caliente
+  // Modal/Banner de Borrador en Caliente (Paleta EPMAPS: bgBlue + primary/surface)
   draftModalContainer: {
-    backgroundColor: EPMAPS_COLORS.warningBg,
-    borderWidth: 1.5,
-    borderColor: EPMAPS_COLORS.warningBorder,
+    backgroundColor: EPMAPS_COLORS.bgBlue,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.bgBlueBorder,
     marginHorizontal: EPMAPS_SPACING.lg,
     marginTop: EPMAPS_SPACING.md,
     padding: EPMAPS_SPACING.lg,
@@ -944,7 +953,8 @@ const styles = StyleSheet.create({
   draftModalTitle: {
     fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
     fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
-    color: EPMAPS_COLORS.textDark,
+    color: EPMAPS_COLORS.primaryDark,
+    flex: 1,
   },
   draftModalText: {
     fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
@@ -954,12 +964,12 @@ const styles = StyleSheet.create({
   },
   draftModalActions: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
     gap: EPMAPS_SPACING.sm,
   },
   discardButton: {
+    flex: 1,
     minHeight: EPMAPS_TOUCH.minHeight,
-    paddingHorizontal: EPMAPS_SPACING.md,
+    paddingHorizontal: EPMAPS_SPACING.sm,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -969,23 +979,26 @@ const styles = StyleSheet.create({
     borderRadius: EPMAPS_RADII.md,
   },
   discardButtonText: {
-    color: EPMAPS_COLORS.textDark,
+    color: EPMAPS_COLORS.primaryDark,
     fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
     fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    flexShrink: 1,
   },
   resumeButton: {
+    flex: 1,
     minHeight: EPMAPS_TOUCH.minHeight,
-    paddingHorizontal: EPMAPS_SPACING.md,
+    paddingHorizontal: EPMAPS_SPACING.sm,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: EPMAPS_COLORS.primaryDark,
+    backgroundColor: EPMAPS_COLORS.primary,
     borderRadius: EPMAPS_RADII.md,
   },
   resumeButtonText: {
     color: EPMAPS_COLORS.textInverse,
     fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
     fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    flexShrink: 1,
   },
   // Contenedor de cada paso
   stepContent: {
@@ -1053,21 +1066,20 @@ const styles = StyleSheet.create({
     marginBottom: EPMAPS_SPACING.md,
   },
   inputLabel: {
-    fontSize: EPMAPS_TYPOGRAPHY.sizes.xs,
-    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
     color: EPMAPS_COLORS.primaryDark,
-    letterSpacing: 0.6,
     marginBottom: EPMAPS_SPACING.sm,
   },
   textInput: {
-    borderWidth: 1.2,
+    borderWidth: 1,
     borderColor: EPMAPS_COLORS.borderMedium,
     borderRadius: EPMAPS_RADII.md,
     paddingHorizontal: EPMAPS_SPACING.md,
     paddingVertical: EPMAPS_SPACING.md,
     fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
     color: EPMAPS_COLORS.textDark,
-    backgroundColor: EPMAPS_COLORS.bgLight,
+    backgroundColor: EPMAPS_COLORS.surface,
   },
   textArea: {
     minHeight: 84,
@@ -1098,13 +1110,18 @@ const styles = StyleSheet.create({
   referenceLabel: {
     fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
     color: EPMAPS_COLORS.textMuted,
-    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.medium,
   },
   referenceValue: {
     fontSize: 14,
     color: EPMAPS_COLORS.primaryDark,
     fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
     fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
+  },
+  unitSuffix: {
+    fontSize: 12,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.medium,
+    color: EPMAPS_COLORS.textMuted,
   },
   referenceDivider: {
     height: 1,
@@ -1465,10 +1482,11 @@ const styles = StyleSheet.create({
   navButtonFinish: {
     flex: 1,
     minHeight: EPMAPS_TOUCH.buttonHeight,
-    backgroundColor: EPMAPS_COLORS.success,
+    backgroundColor: EPMAPS_COLORS.primary,
     borderRadius: EPMAPS_RADII.md,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: EPMAPS_SPACING.md,
   },
   finishButtonInner: {
     flexDirection: 'row',

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { MeterRecord, MonthlyDuplicateCheckResult } from '@/domain/meter/types';
 import { sanitizeMeterCodeInput, validateMeterCode, checkMonthlyDuplicate } from '@/domain/meter/meterRules';
+import { formatReadingStatusLabel } from '@/domain/readingQueue/queueRules';
 import { getMeterFromCache, saveMeterToCache } from '@/storage/meter/meterCacheStorage';
 import { fetchMeterFromOffice } from '@/services/officeApi';
 import { fetchCurrentNetworkStatus } from '@/presentation/session/networkMonitor';
@@ -91,7 +92,7 @@ export function useMeterSearchController(): UseMeterSearchControllerReturn {
             hasDuplicate: true,
             isSubmitted: false,
             canEditPending: true,
-            message: `El medidor ${code} ya cuenta con una lectura capturada en este dispositivo (${localReading.status === 'PENDING_VERIFICATION' ? 'Pendiente de verificar' : 'Pendiente de enviar'}).`,
+            message: `El medidor ${code} ya cuenta con una lectura capturada en este dispositivo (${formatReadingStatusLabel(localReading.status)}).`,
           });
         }
         setIsSearching(false);

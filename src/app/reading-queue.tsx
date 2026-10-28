@@ -282,9 +282,12 @@ export default function ReadingQueueScreen() {
           accessibilityRole="button"
           accessibilityLabel="Regresar al inicio"
         >
-          <View style={styles.backButtonBadge}>
-            <Ionicons name="arrow-back" size={16} color={EPMAPS_COLORS.primaryDark} />
-          </View>
+          <Ionicons
+            name="arrow-back"
+            size={18}
+            color={EPMAPS_COLORS.primaryDark}
+            style={styles.backButtonIcon}
+          />
           <Text style={styles.backButtonText}>Regresar</Text>
         </TouchableOpacity>
 
@@ -430,19 +433,13 @@ const styles = StyleSheet.create({
     marginBottom: EPMAPS_SPACING.xs,
     paddingRight: EPMAPS_SPACING.md,
   },
-  backButtonBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: EPMAPS_RADII.sm,
-    backgroundColor: EPMAPS_COLORS.bgBlue,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: EPMAPS_SPACING.sm,
+  backButtonIcon: {
+    marginRight: 6,
   },
   backButtonText: {
     fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
     color: EPMAPS_COLORS.primaryDark,
-    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
   },
   headerTitleRow: {
     flexDirection: 'row',

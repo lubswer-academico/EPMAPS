@@ -18,6 +18,8 @@ export const EPMAPS_COLORS = {
   bgLight: '#F8FAFC',
   bgSecondary: '#F1F5F9',
   bgBlue: '#E1F2FB',      // Celeste claro institucional para contenedores informativos
+  bgBlueBorder: '#BAE6FD',
+  primaryDisabled: '#93C5FD',
 
   // Estados Semánticos
   success: '#2E7D32',

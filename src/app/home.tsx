@@ -12,7 +12,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { GlobalStatusBar } from '@/components/GlobalStatusBar';
 import { useSessionController } from '@/presentation/session/useSessionController';
 import { useGlobalStatusController } from '@/presentation/session/useGlobalStatusController';
-import { EPMAPS_COLORS, EPMAPS_RADII, EPMAPS_SPACING, EPMAPS_TOUCH } from '@/constants/theme';
+import {
+  EPMAPS_COLORS,
+  EPMAPS_RADII,
+  EPMAPS_SPACING,
+  EPMAPS_TOUCH,
+  EPMAPS_TYPOGRAPHY,
+} from '@/constants/theme';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -52,10 +58,6 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.techMainInfo}>
-              <View style={styles.shiftBadge}>
-                <View style={styles.shiftDot} />
-                <Text style={styles.shiftBadgeText}>TURNO ACTIVO</Text>
-              </View>
               <Text style={styles.techName} numberOfLines={1}>
                 {technician?.name ?? 'Técnico de Campo'}
               </Text>
@@ -77,55 +79,37 @@ export default function HomeScreen() {
                 {todayDate.charAt(0).toUpperCase() + todayDate.slice(1)}
               </Text>
             </View>
-            <View style={styles.secureStorageBadge}>
-              <Ionicons name="shield-checkmark" size={13} color={EPMAPS_COLORS.accentDark} />
-              <Text style={styles.secureStorageText}>Persistencia Local Activa</Text>
-            </View>
           </View>
         </View>
 
-        {/* Resumen Operativo de la Jornada (KPIs) */}
+        {/* Resumen Operativo de la Jornada (KPIs Unificados sin iconos en cajas) */}
         <View style={styles.kpiSection}>
-          <Text style={styles.sectionHeader}>INDICADORES DE JORNADA</Text>
-          <View style={styles.kpiGrid}>
+          <Text style={styles.sectionHeader}>Indicadores de jornada</Text>
+          <View style={styles.kpiStrip}>
             {/* KPI 1: Cola de Lecturas */}
             <TouchableOpacity
-              style={styles.kpiCard}
+              style={styles.kpiCell}
               onPress={() => router.push('/reading-queue')}
               activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel="Ver bandeja de lecturas pendientes"
             >
-              <View style={styles.kpiTopRow}>
-                <View style={[styles.kpiIconBox, { backgroundColor: EPMAPS_COLORS.bgBlue }]}>
-                  <Ionicons name="document-text-outline" size={20} color={EPMAPS_COLORS.primaryDark} />
-                </View>
-                <Ionicons name="chevron-forward" size={16} color={EPMAPS_COLORS.textSubtle} />
+              <View style={styles.kpiLabelRow}>
+                <Text style={styles.kpiLabel}>Lecturas en cola</Text>
+                <Ionicons name="chevron-forward" size={14} color={EPMAPS_COLORS.textMuted} />
               </View>
               <Text style={styles.kpiNumber}>{pendingCount}</Text>
-              <Text style={styles.kpiTitle}>Lecturas en Cola</Text>
               <Text style={styles.kpiSub}>
                 {pendingCount === 0 ? 'Sin envíos pendientes' : 'Por transmitir'}
               </Text>
             </TouchableOpacity>
 
+            <View style={styles.kpiVerticalDivider} />
+
             {/* KPI 2: Conectividad y Sincronización */}
-            <View style={styles.kpiCard}>
-              <View style={styles.kpiTopRow}>
-                <View
-                  style={[
-                    styles.kpiIconBox,
-                    {
-                      backgroundColor: isOnline ? EPMAPS_COLORS.successBg : EPMAPS_COLORS.dangerBg,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={isOnline ? 'wifi' : 'cloud-offline-outline'}
-                    size={20}
-                    color={isOnline ? EPMAPS_COLORS.success : EPMAPS_COLORS.danger}
-                  />
-                </View>
+            <View style={styles.kpiCell}>
+              <View style={styles.kpiLabelRow}>
+                <Text style={styles.kpiLabel}>Enlace de datos</Text>
                 <View
                   style={[
                     styles.kpiStatusDot,
@@ -141,7 +125,6 @@ export default function HomeScreen() {
               >
                 {connectionLabel}
               </Text>
-              <Text style={styles.kpiTitle}>Enlace de Datos</Text>
               <Text style={styles.kpiSub}>
                 {isOnline ? 'Envío desatendido listo' : 'Guardado offline seguro'}
               </Text>
@@ -151,7 +134,7 @@ export default function HomeScreen() {
 
         {/* Acciones Operativas Principales */}
         <View style={styles.actionSection}>
-          <Text style={styles.sectionHeader}>ACCIONES PRINCIPALES</Text>
+          <Text style={styles.sectionHeader}>Acciones principales</Text>
 
           <TouchableOpacity
             style={styles.primaryActionButton}
@@ -160,18 +143,19 @@ export default function HomeScreen() {
             accessibilityRole="button"
             accessibilityLabel="Buscar Medidor"
           >
-            <View style={styles.actionIconCirclePrimary}>
-              <Ionicons name="search" size={22} color={EPMAPS_COLORS.textInverse} />
-            </View>
+            <Ionicons
+              name="search-outline"
+              size={22}
+              color={EPMAPS_COLORS.primaryDark}
+              style={styles.actionLeadIcon}
+            />
             <View style={styles.actionTextCol}>
               <Text style={styles.actionTitlePrimary}>Buscar Medidor</Text>
               <Text style={styles.actionSubtextPrimary}>
-                Consultar catastro en línea o memoria local MED-XXXXXX
+                Consultar datos e historial por código MED-XXXXXX
               </Text>
             </View>
-            <View style={styles.actionArrowCirclePrimary}>
-              <Ionicons name="chevron-forward" size={18} color="#93C5FD" />
-            </View>
+            <Ionicons name="chevron-forward" size={18} color={EPMAPS_COLORS.textMuted} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -181,9 +165,12 @@ export default function HomeScreen() {
             accessibilityRole="button"
             accessibilityLabel="Bandeja de Lecturas"
           >
-            <View style={styles.actionIconCircleSecondary}>
-              <Ionicons name="file-tray-stacked-outline" size={22} color={EPMAPS_COLORS.primaryDark} />
-            </View>
+            <Ionicons
+              name="file-tray-stacked-outline"
+              size={22}
+              color={EPMAPS_COLORS.primaryDark}
+              style={styles.actionLeadIcon}
+            />
             <View style={styles.actionTextCol}>
               <View style={styles.actionTitleRow}>
                 <Text style={styles.actionTitleSecondary}>Bandeja de Lecturas</Text>
@@ -197,24 +184,12 @@ export default function HomeScreen() {
                 Revisión de capturas y verificación diferida
               </Text>
             </View>
-            <View style={styles.actionArrowCircleSecondary}>
-              <Ionicons name="chevron-forward" size={18} color={EPMAPS_COLORS.primary} />
-            </View>
+            <Ionicons name="chevron-forward" size={18} color={EPMAPS_COLORS.textMuted} />
           </TouchableOpacity>
         </View>
 
-        {/* Garantía Institucional Offline & Cierre de Turno */}
+        {/* Cierre de Turno */}
         <View style={styles.footerSection}>
-          <View style={styles.offlineGuaranteeBox}>
-            <Ionicons name="shield-checkmark-outline" size={20} color={EPMAPS_COLORS.primaryDark} style={styles.guaranteeIcon} />
-            <View style={styles.guaranteeTextCol}>
-              <Text style={styles.guaranteeTitle}>Operación 100% Offline-First</Text>
-              <Text style={styles.guaranteeBody}>
-                Todas las capturas se resguardan de inmediato en el almacenamiento local antes de cualquier transmisión.
-              </Text>
-            </View>
-          </View>
-
           <TouchableOpacity
             style={styles.logoutButton}
             onPress={handleLogout}
@@ -222,7 +197,7 @@ export default function HomeScreen() {
             accessibilityRole="button"
             accessibilityLabel="Cerrar Turno"
           >
-            <Ionicons name="log-out-outline" size={18} color={EPMAPS_COLORS.danger} style={styles.logoutIcon} />
+            <Ionicons name="log-out-outline" size={18} color={EPMAPS_COLORS.textInverse} style={styles.logoutIcon} />
             <Text style={styles.logoutButtonText}>Cerrar Turno</Text>
           </TouchableOpacity>
         </View>
@@ -237,22 +212,20 @@ const styles = StyleSheet.create({
     backgroundColor: EPMAPS_COLORS.bgLight,
   },
   container: {
-    padding: EPMAPS_SPACING.lg,
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    paddingHorizontal: EPMAPS_SPACING.lg,
+    paddingTop: EPMAPS_SPACING.xl,
     paddingBottom: EPMAPS_SPACING.xxl,
   },
   // Tarjeta del Técnico
   techCard: {
     backgroundColor: EPMAPS_COLORS.surface,
     borderRadius: EPMAPS_RADII.lg,
-    padding: EPMAPS_SPACING.lg,
+    padding: EPMAPS_SPACING.xl,
     borderWidth: 1,
     borderColor: EPMAPS_COLORS.borderLight,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-    marginBottom: EPMAPS_SPACING.lg,
+    marginBottom: EPMAPS_SPACING.xl,
   },
   techCardHeader: {
     flexDirection: 'row',
@@ -263,12 +236,12 @@ const styles = StyleSheet.create({
     marginRight: EPMAPS_SPACING.md,
   },
   avatarCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: EPMAPS_COLORS.bgBlue,
-    borderWidth: 1.5,
-    borderColor: '#BAE6FD',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: EPMAPS_COLORS.bgSecondary,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.borderMedium,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -292,34 +265,9 @@ const styles = StyleSheet.create({
   techMainInfo: {
     flex: 1,
   },
-  shiftBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: EPMAPS_COLORS.successBg,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: EPMAPS_RADII.full,
-    marginBottom: 4,
-    borderWidth: 1,
-    borderColor: EPMAPS_COLORS.successBorder,
-  },
-  shiftDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: EPMAPS_COLORS.success,
-    marginRight: 5,
-  },
-  shiftBadgeText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: EPMAPS_COLORS.success,
-    letterSpacing: 0.5,
-  },
   techName: {
     fontSize: 19,
-    fontWeight: '800',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
     color: EPMAPS_COLORS.primaryDark,
     lineHeight: 24,
   },
@@ -339,11 +287,12 @@ const styles = StyleSheet.create({
   },
   codeText: {
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
     color: EPMAPS_COLORS.textDark,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
   },
   roleText: {
-    fontSize: 12,
+    fontSize: 12.5,
     color: EPMAPS_COLORS.textMuted,
   },
   cardDivider: {
@@ -362,65 +311,47 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   footerDateText: {
-    fontSize: 11.5,
+    fontSize: 12,
     color: EPMAPS_COLORS.textMuted,
-    fontWeight: '500',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.medium,
   },
-  secureStorageBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: EPMAPS_COLORS.bgBlue,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: EPMAPS_RADII.sm,
-  },
-  secureStorageText: {
-    fontSize: 10.5,
-    fontWeight: '700',
-    color: EPMAPS_COLORS.accentDark,
-  },
-  // Sección de KPIs
+  // Sección de KPIs Unificada (app-screens §5: one container split by 1px divider, label above value)
   kpiSection: {
-    marginBottom: EPMAPS_SPACING.lg,
+    marginBottom: EPMAPS_SPACING.xl,
   },
   sectionHeader: {
-    fontSize: 11,
-    fontWeight: '800',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
     color: EPMAPS_COLORS.textMuted,
-    letterSpacing: 0.7,
-    marginBottom: EPMAPS_SPACING.sm,
+    marginBottom: EPMAPS_SPACING.md,
     marginLeft: 2,
   },
-  kpiGrid: {
+  kpiStrip: {
     flexDirection: 'row',
-    gap: EPMAPS_SPACING.md,
-  },
-  kpiCard: {
-    flex: 1,
     backgroundColor: EPMAPS_COLORS.surface,
     borderRadius: EPMAPS_RADII.lg,
-    padding: EPMAPS_SPACING.md,
     borderWidth: 1,
     borderColor: EPMAPS_COLORS.borderLight,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 3,
-    elevation: 1,
+    overflow: 'hidden',
   },
-  kpiTopRow: {
+  kpiCell: {
+    flex: 1,
+    padding: EPMAPS_SPACING.xl,
+  },
+  kpiVerticalDivider: {
+    width: 1,
+    backgroundColor: EPMAPS_COLORS.borderLight,
+  },
+  kpiLabelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
   },
-  kpiIconBox: {
-    width: 34,
-    height: 34,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+  kpiLabel: {
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.medium,
+    color: EPMAPS_COLORS.textMuted,
   },
   kpiStatusDot: {
     width: 8,
@@ -428,95 +359,65 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   kpiNumber: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontSize: 30,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
     color: EPMAPS_COLORS.primaryDark,
-    lineHeight: 26,
+    lineHeight: 34,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
   },
   kpiStatusText: {
-    fontSize: 15,
-    fontWeight: '800',
-    lineHeight: 26,
-  },
-  kpiTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: EPMAPS_COLORS.textDark,
-    marginTop: 2,
+    fontSize: 19,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    lineHeight: 34,
   },
   kpiSub: {
-    fontSize: 10.5,
+    fontSize: 12.5,
     color: EPMAPS_COLORS.textMuted,
-    marginTop: 1,
+    marginTop: 6,
   },
   // Acciones Principales
   actionSection: {
-    marginBottom: EPMAPS_SPACING.lg,
+    marginBottom: EPMAPS_SPACING.xl,
   },
   primaryActionButton: {
-    minHeight: 74,
-    backgroundColor: EPMAPS_COLORS.primaryDark,
+    minHeight: 76,
+    backgroundColor: EPMAPS_COLORS.surface,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.borderMedium,
     borderRadius: EPMAPS_RADII.lg,
     paddingHorizontal: EPMAPS_SPACING.lg,
-    paddingVertical: EPMAPS_SPACING.md,
+    paddingVertical: EPMAPS_SPACING.lg,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: EPMAPS_SPACING.md,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
   },
-  actionIconCirclePrimary: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: EPMAPS_COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+  actionLeadIcon: {
     marginRight: EPMAPS_SPACING.md,
   },
   actionTextCol: {
     flex: 1,
+    marginRight: EPMAPS_SPACING.sm,
   },
   actionTitlePrimary: {
-    color: EPMAPS_COLORS.textInverse,
-    fontSize: 16.5,
-    fontWeight: '700',
+    color: EPMAPS_COLORS.primaryDark,
+    fontSize: 16,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
   },
   actionSubtextPrimary: {
-    color: '#93C5FD',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  actionArrowCirclePrimary: {
-    marginLeft: 8,
+    color: EPMAPS_COLORS.textMuted,
+    fontSize: 12.5,
+    marginTop: 3,
   },
   secondaryActionButton: {
-    minHeight: 74,
+    minHeight: 76,
     backgroundColor: EPMAPS_COLORS.surface,
-    borderWidth: 1.2,
+    borderWidth: 1,
     borderColor: EPMAPS_COLORS.borderMedium,
     borderRadius: EPMAPS_RADII.lg,
     paddingHorizontal: EPMAPS_SPACING.lg,
-    paddingVertical: EPMAPS_SPACING.md,
+    paddingVertical: EPMAPS_SPACING.lg,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 3,
-    elevation: 1,
-  },
-  actionIconCircleSecondary: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: EPMAPS_COLORS.bgBlue,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: EPMAPS_SPACING.md,
   },
   actionTitleRow: {
     flexDirection: 'row',
@@ -525,65 +426,35 @@ const styles = StyleSheet.create({
   },
   actionTitleSecondary: {
     color: EPMAPS_COLORS.primaryDark,
-    fontSize: 16.5,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
   },
   counterBadge: {
-    backgroundColor: EPMAPS_COLORS.primary,
-    paddingHorizontal: 7,
+    backgroundColor: EPMAPS_COLORS.bgBlue,
+    borderWidth: 1,
+    borderColor: EPMAPS_COLORS.bgBlueBorder,
+    paddingHorizontal: 8,
     paddingVertical: 1,
     borderRadius: EPMAPS_RADII.full,
   },
   counterBadgeText: {
-    color: EPMAPS_COLORS.textInverse,
+    color: EPMAPS_COLORS.accentDark,
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
   },
   actionSubtextSecondary: {
     color: EPMAPS_COLORS.textMuted,
-    fontSize: 12,
-    marginTop: 2,
-  },
-  actionArrowCircleSecondary: {
-    marginLeft: 8,
+    fontSize: 12.5,
+    marginTop: 3,
   },
   // Pie de Pantalla
   footerSection: {
-    marginTop: EPMAPS_SPACING.xs,
-  },
-  offlineGuaranteeBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#F1F5F9',
-    borderWidth: 1,
-    borderColor: EPMAPS_COLORS.borderLight,
-    borderRadius: EPMAPS_RADII.md,
-    padding: EPMAPS_SPACING.md,
-    marginBottom: EPMAPS_SPACING.md,
-  },
-  guaranteeIcon: {
-    marginRight: EPMAPS_SPACING.sm,
-    marginTop: 1,
-  },
-  guaranteeTextCol: {
-    flex: 1,
-  },
-  guaranteeTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: EPMAPS_COLORS.primaryDark,
-  },
-  guaranteeBody: {
-    fontSize: 11,
-    color: EPMAPS_COLORS.textMuted,
-    marginTop: 2,
-    lineHeight: 15,
+    marginTop: EPMAPS_SPACING.sm,
   },
   logoutButton: {
-    minHeight: EPMAPS_TOUCH.minHeight,
-    backgroundColor: EPMAPS_COLORS.dangerSoftBg,
-    borderWidth: 1.2,
-    borderColor: EPMAPS_COLORS.dangerSoftBorder,
+    minHeight: EPMAPS_TOUCH.buttonHeight,
+    backgroundColor: EPMAPS_COLORS.primaryDark,
     borderRadius: EPMAPS_RADII.md,
     flexDirection: 'row',
     alignItems: 'center',
@@ -594,9 +465,9 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   logoutButtonText: {
-    color: EPMAPS_COLORS.danger,
+    color: EPMAPS_COLORS.textInverse,
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
   },
 });
 

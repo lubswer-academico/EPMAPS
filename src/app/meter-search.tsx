@@ -13,11 +13,13 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { GlobalStatusBar } from '@/components/GlobalStatusBar';
 import { useMeterSearchController } from '@/presentation/meter/useMeterSearchController';
+import { formatMeterStatusLabel } from '@/domain/meter/meterRules';
 import {
   EPMAPS_COLORS,
   EPMAPS_RADII,
   EPMAPS_SPACING,
   EPMAPS_TOUCH,
+  EPMAPS_TYPOGRAPHY,
 } from '@/constants/theme';
 
 export default function MeterSearchScreen() {
@@ -64,9 +66,12 @@ export default function MeterSearchScreen() {
             accessibilityRole="button"
             accessibilityLabel="Regresar a inicio"
           >
-            <View style={styles.backButtonBadge}>
-              <Ionicons name="arrow-back" size={16} color={EPMAPS_COLORS.primaryDark} />
-            </View>
+            <Ionicons
+              name="arrow-back"
+              size={18}
+              color={EPMAPS_COLORS.primaryDark}
+              style={styles.backButtonIcon}
+            />
             <Text style={styles.backButtonText}>Regresar</Text>
           </TouchableOpacity>
           <Text style={styles.title}>Consulta de Medidor</Text>
@@ -77,7 +82,7 @@ export default function MeterSearchScreen() {
 
         {/* Sección de Entrada de Código */}
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>CÓDIGO DEL MEDIDOR</Text>
+          <Text style={styles.inputLabel}>Código del medidor</Text>
           <TextInput
             style={[
               styles.input,
@@ -86,7 +91,7 @@ export default function MeterSearchScreen() {
             value={meterCodeInput}
             onChangeText={handleCodeChange}
             placeholder="MED-XXXXXX o dígitos"
-            placeholderTextColor={EPMAPS_COLORS.textSubtle}
+            placeholderTextColor={EPMAPS_COLORS.textMuted}
             autoCapitalize="characters"
             autoCorrect={false}
             maxLength={10}
@@ -163,7 +168,7 @@ export default function MeterSearchScreen() {
           <View style={styles.recordCard}>
             <View style={styles.recordHeaderRow}>
               <View style={styles.recordTitleCol}>
-                <Text style={styles.recordCategoryLabel}>MEDIDOR IDENTIFICADO</Text>
+                <Text style={styles.recordCategoryLabel}>Medidor identificado</Text>
                 <Text style={styles.recordCodeText}>{meterData.code}</Text>
               </View>
               <View style={[styles.badge, isFromCache ? styles.badgeCache : styles.badgeOnline]}>
@@ -181,46 +186,64 @@ export default function MeterSearchScreen() {
 
             <View style={styles.divider} />
 
-            {/* 7 Campos obligatorios */}
+            {/* 7 Campos obligatorios sin numeración de índice artificial */}
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>1. Dirección:</Text>
+              <Text style={styles.dataLabel}>Dirección</Text>
               <Text style={styles.dataValue}>{meterData.address}</Text>
             </View>
 
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>2. Sector:</Text>
+              <Text style={styles.dataLabel}>Sector</Text>
               <Text style={styles.dataValue}>{meterData.sector}</Text>
             </View>
 
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>3. Nro. Cuenta:</Text>
+              <Text style={styles.dataLabel}>Nro. de cuenta</Text>
               <Text style={[styles.dataValue, styles.accountValue]}>{meterData.accountNumber}</Text>
             </View>
 
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>4. Estado:</Text>
-              <View style={styles.statusBadge}>
-                <Text style={styles.statusBadgeText}>
-                  {meterData.status.toUpperCase()}
+              <Text style={styles.dataLabel}>Estado</Text>
+              <View
+                style={[
+                  styles.statusBadge,
+                  meterData.status === 'suspended' && styles.statusBadgeWarning,
+                  meterData.status === 'inactive' && styles.statusBadgeDanger,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.statusBadgeText,
+                    meterData.status === 'suspended' && styles.statusBadgeTextWarning,
+                    meterData.status === 'inactive' && styles.statusBadgeTextDanger,
+                  ]}
+                >
+                  {formatMeterStatusLabel(meterData.status)}
                 </Text>
               </View>
             </View>
 
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>5. Última Lectura:</Text>
-              <Text style={[styles.dataValue, styles.readingValue]}>{meterData.lastReading.value} m³</Text>
-            </View>
-
-            <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>6. Fecha Últ. Lectura:</Text>
-              <Text style={styles.dataValue}>
-                {new Date(meterData.lastReading.date).toLocaleDateString('es-EC')}
+              <Text style={styles.dataLabel}>Última lectura</Text>
+              <Text style={[styles.dataValue, styles.readingValue]}>
+                {meterData.lastReading.value}
+                <Text style={styles.unitSuffix}> m³</Text>
               </Text>
             </View>
 
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>7. Consumo Promedio:</Text>
-              <Text style={[styles.dataValue, styles.averageValue]}>{meterData.averageConsumption} m³/mes</Text>
+              <Text style={styles.dataLabel}>Fecha última lectura</Text>
+              <Text style={[styles.dataValue, styles.tabularValue]}>
+                {new Date(meterData.lastReading.date).toLocaleDateString('es-EC')}
+              </Text>
+            </View>
+
+            <View style={[styles.dataRow, styles.dataRowLast]}>
+              <Text style={styles.dataLabel}>Consumo promedio</Text>
+              <Text style={[styles.dataValue, styles.averageValue]}>
+                {meterData.averageConsumption}
+                <Text style={styles.unitSuffix}> m³/mes</Text>
+              </Text>
             </View>
           </View>
         ) : null}
@@ -307,29 +330,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: EPMAPS_SPACING.xs,
     alignSelf: 'flex-start',
+    paddingRight: EPMAPS_SPACING.md,
   },
-  backButtonBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: EPMAPS_RADII.sm,
-    backgroundColor: EPMAPS_COLORS.bgBlue,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: EPMAPS_SPACING.sm,
+  backButtonIcon: {
+    marginRight: 6,
   },
   backButtonText: {
-    fontSize: 15,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
     color: EPMAPS_COLORS.primaryDark,
-    fontWeight: '700',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
   },
   title: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.xl,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
     color: EPMAPS_COLORS.primaryDark,
     letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
     color: EPMAPS_COLORS.textMuted,
     marginTop: 3,
   },
@@ -341,29 +359,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: EPMAPS_COLORS.borderLight,
     marginBottom: EPMAPS_SPACING.lg,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
   },
   inputLabel: {
-    fontSize: 11,
-    fontWeight: '800',
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
     color: EPMAPS_COLORS.primaryDark,
-    letterSpacing: 0.6,
     marginBottom: EPMAPS_SPACING.sm,
   },
   input: {
     minHeight: EPMAPS_TOUCH.minHeight,
-    borderWidth: 1.2,
+    borderWidth: 1,
     borderColor: EPMAPS_COLORS.borderMedium,
     borderRadius: EPMAPS_RADII.md,
     paddingHorizontal: EPMAPS_SPACING.md,
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
     color: EPMAPS_COLORS.textDark,
-    backgroundColor: EPMAPS_COLORS.bgLight,
+    backgroundColor: EPMAPS_COLORS.surface,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
   },
   inputErrorBorder: {
     borderColor: EPMAPS_COLORS.danger,
@@ -380,7 +393,7 @@ const styles = StyleSheet.create({
   validationErrorText: {
     color: EPMAPS_COLORS.danger,
     fontSize: 12.5,
-    fontWeight: '600',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
     flex: 1,
   },
   searchButton: {
@@ -390,21 +403,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: EPMAPS_SPACING.md,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
   },
   searchButtonDisabled: {
-    backgroundColor: '#93C5FD',
-    elevation: 0,
-    shadowOpacity: 0,
+    backgroundColor: EPMAPS_COLORS.primaryDisabled,
   },
   searchButtonText: {
     color: EPMAPS_COLORS.textInverse,
     fontSize: 15.5,
-    fontWeight: '700',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
   },
   buttonInnerRow: {
     flexDirection: 'row',
@@ -433,12 +439,12 @@ const styles = StyleSheet.create({
   },
   errorBoxTitle: {
     color: EPMAPS_COLORS.danger,
-    fontWeight: '800',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
     fontSize: 14,
   },
   errorBoxText: {
-    color: '#7F1D1D',
-    fontSize: 13,
+    color: EPMAPS_COLORS.dangerDark,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
     lineHeight: 18,
   },
   warningBox: {
@@ -448,26 +454,21 @@ const styles = StyleSheet.create({
     borderRadius: EPMAPS_RADII.lg,
     padding: EPMAPS_SPACING.md,
     marginBottom: EPMAPS_SPACING.lg,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 3,
-    elevation: 1,
   },
   warningBoxTitle: {
-    color: '#92400E',
-    fontWeight: '800',
+    color: EPMAPS_COLORS.warningDark,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
     fontSize: 14.5,
   },
   warningBoxText: {
-    color: '#78350F',
-    fontSize: 13,
+    color: EPMAPS_COLORS.warningDark,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
     marginBottom: EPMAPS_SPACING.md,
     lineHeight: 19,
   },
   secondaryActionButton: {
     minHeight: EPMAPS_TOUCH.minHeight,
-    backgroundColor: EPMAPS_COLORS.warning,
+    backgroundColor: EPMAPS_COLORS.primary,
     borderRadius: EPMAPS_RADII.md,
     flexDirection: 'row',
     alignItems: 'center',
@@ -477,7 +478,7 @@ const styles = StyleSheet.create({
   secondaryActionButtonText: {
     color: EPMAPS_COLORS.textInverse,
     fontSize: 13.5,
-    fontWeight: '700',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
   },
   // Ficha Técnica y Comercial (7 Campos)
   recordCard: {
@@ -487,11 +488,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: EPMAPS_COLORS.borderLight,
     marginBottom: EPMAPS_SPACING.lg,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
   },
   recordHeaderRow: {
     flexDirection: 'row',
@@ -502,17 +498,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   recordCategoryLabel: {
-    fontSize: 10,
-    fontWeight: '800',
+    fontSize: 12,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.medium,
     color: EPMAPS_COLORS.textMuted,
-    letterSpacing: 0.6,
     marginBottom: 2,
   },
   recordCodeText: {
     fontSize: 20,
-    fontWeight: '800',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
     color: EPMAPS_COLORS.primaryDark,
-    letterSpacing: 0.3,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
   },
   badge: {
     flexDirection: 'row',
@@ -524,7 +519,7 @@ const styles = StyleSheet.create({
   },
   badgeCache: {
     backgroundColor: EPMAPS_COLORS.bgBlue,
-    borderColor: '#BAE6FD',
+    borderColor: EPMAPS_COLORS.bgBlueBorder,
   },
   badgeOnline: {
     backgroundColor: EPMAPS_COLORS.successBg,
@@ -535,7 +530,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
   },
   badgeCacheText: {
     color: EPMAPS_COLORS.accentDark,
@@ -552,46 +547,76 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 6,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#F1F5F9',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: EPMAPS_COLORS.bgSecondary,
+  },
+  dataRowLast: {
+    borderBottomWidth: 0,
+    paddingBottom: 0,
   },
   dataLabel: {
-    fontSize: 13,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
     color: EPMAPS_COLORS.textMuted,
-    fontWeight: '600',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.medium,
   },
   dataValue: {
-    fontSize: 13.5,
+    fontSize: 14,
     color: EPMAPS_COLORS.textDark,
-    fontWeight: '700',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
     flexShrink: 1,
     textAlign: 'right',
+    marginLeft: EPMAPS_SPACING.sm,
+  },
+  tabularValue: {
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
   },
   accountValue: {
     color: EPMAPS_COLORS.primaryDark,
-    fontWeight: '800',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
   },
   statusBadge: {
     backgroundColor: EPMAPS_COLORS.successBg,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: EPMAPS_RADII.sm,
     borderWidth: 1,
     borderColor: EPMAPS_COLORS.successBorder,
   },
+  statusBadgeWarning: {
+    backgroundColor: EPMAPS_COLORS.warningBg,
+    borderColor: EPMAPS_COLORS.warningBorder,
+  },
+  statusBadgeDanger: {
+    backgroundColor: EPMAPS_COLORS.dangerBg,
+    borderColor: EPMAPS_COLORS.dangerBorder,
+  },
   statusBadgeText: {
-    fontSize: 11,
-    fontWeight: '800',
+    fontSize: 11.5,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
     color: EPMAPS_COLORS.success,
   },
+  statusBadgeTextWarning: {
+    color: EPMAPS_COLORS.warningDark,
+  },
+  statusBadgeTextDanger: {
+    color: EPMAPS_COLORS.danger,
+  },
   readingValue: {
-    color: EPMAPS_COLORS.textDark,
-    fontWeight: '800',
+    color: EPMAPS_COLORS.primaryDark,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
   },
   averageValue: {
     color: EPMAPS_COLORS.primary,
-    fontWeight: '800',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+    fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
+  },
+  unitSuffix: {
+    fontSize: 12,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.medium,
+    color: EPMAPS_COLORS.textMuted,
   },
   // Bloqueo / Duplicidad R10
   duplicateBox: {
@@ -599,11 +624,6 @@ const styles = StyleSheet.create({
     padding: EPMAPS_SPACING.md,
     borderWidth: 1,
     marginBottom: EPMAPS_SPACING.lg,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 3,
-    elevation: 1,
   },
   duplicateBoxBlocked: {
     backgroundColor: EPMAPS_COLORS.dangerBg,
@@ -615,60 +635,56 @@ const styles = StyleSheet.create({
   },
   duplicateBoxTitle: {
     fontSize: 14.5,
-    fontWeight: '800',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
   },
   duplicateTitleBlocked: {
     color: EPMAPS_COLORS.danger,
   },
   duplicateTitlePending: {
-    color: '#92400E',
+    color: EPMAPS_COLORS.warningDark,
   },
   duplicateBoxText: {
-    fontSize: 13,
+    fontSize: EPMAPS_TYPOGRAPHY.sizes.sm,
     lineHeight: 18,
   },
   duplicateTextBlocked: {
-    color: '#7F1D1D',
+    color: EPMAPS_COLORS.dangerDark,
   },
   duplicateTextPending: {
-    color: '#78350F',
+    color: EPMAPS_COLORS.warningDark,
   },
   editPendingButton: {
     minHeight: EPMAPS_TOUCH.minHeight,
-    backgroundColor: EPMAPS_COLORS.warning,
+    backgroundColor: EPMAPS_COLORS.primary,
     borderRadius: EPMAPS_RADII.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: EPMAPS_SPACING.md,
+    paddingHorizontal: EPMAPS_SPACING.md,
   },
   editPendingButtonText: {
     color: EPMAPS_COLORS.textInverse,
     fontSize: 13.5,
-    fontWeight: '700',
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
   },
-  // Botón de Captura Maestro
+  // Botón de Captura Maestro (Paleta EPMAPS: --color-button-bg = primary #2D72C0)
   captureContainer: {
     marginTop: EPMAPS_SPACING.xs,
   },
   captureButton: {
     minHeight: EPMAPS_TOUCH.buttonHeight,
-    backgroundColor: EPMAPS_COLORS.success,
+    backgroundColor: EPMAPS_COLORS.primary,
     borderRadius: EPMAPS_RADII.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+    paddingHorizontal: EPMAPS_SPACING.lg,
   },
   captureButtonText: {
     color: EPMAPS_COLORS.textInverse,
     fontSize: 16,
-    fontWeight: '800',
-    letterSpacing: 0.3,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
   },
 });
 

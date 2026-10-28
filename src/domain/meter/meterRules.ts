@@ -1,4 +1,4 @@
-import { MeterValidationResult, MonthlyDuplicateCheckResult } from './types';
+import { MeterStatus, MeterValidationResult, MonthlyDuplicateCheckResult } from './types';
 
 const METER_CODE_REGEX = /^MED-\d{6}$/;
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
@@ -93,4 +93,25 @@ export function checkMonthlyDuplicate(
     canEditPending: true,
     message: 'Este medidor ya tiene una lectura registrada en este mes.',
   };
+}
+
+/**
+ * Mapea el estado administrativo del medidor proveniente del servidor ('active' | 'suspended' | 'inactive')
+ * a su etiqueta formal en español para el técnico de campo.
+ */
+export function formatMeterStatusLabel(status: MeterStatus | string): string {
+  const normalized = String(status || '').trim().toLowerCase();
+  switch (normalized) {
+    case 'active':
+    case 'activo':
+      return 'Activo';
+    case 'suspended':
+    case 'suspendido':
+      return 'Suspendido';
+    case 'inactive':
+    case 'inactivo':
+      return 'Inactivo';
+    default:
+      return status || 'Desconocido';
+  }
 }

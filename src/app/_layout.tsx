@@ -1,3 +1,4 @@
+import { StatusBar } from 'react-native';
 import { Stack } from 'expo-router';
 import { useSyncEngine } from '@/presentation/sync/useSyncEngine';
 
@@ -6,10 +7,17 @@ export default function RootLayout() {
   useSyncEngine();
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    />
+    <>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent={true}
+      />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      />
+    </>
   );
 }

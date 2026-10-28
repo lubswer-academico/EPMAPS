@@ -8,8 +8,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas.
 - Calidad: 15 suites / 151 tests pasando 100% en verde con Jest (`npx jest`) y 0 errores en TypeScript (`npx tsc --noEmit`).
 
 ## Decisiones (y por qué)
-- Refactorización de estilos limpios global (Specs 001 a 005): Reemplazados todos los colores hexadecimales hardcodeados por tokens de `src/constants/theme.ts` (incluyendo tokens de estado operativo `PENDING_VERIFICATION`, `PENDING_SYNC`, `REQUIRES_ATTENTION`, `SUBMITTED` y `EPMAPS_TYPOGRAPHY.tabularNums`).
-- Bandeja y Detalle de Lectura accesibles en campo: Insignias e iconos semánticos con contraste ≥ 4.5:1, banners diferenciados de inmutabilidad (`SUBMITTED`) y atención requerida (`REQUIRES_ATTENTION`), y cifras tabulares en lecturas, consumos y fechas.
+- Refactorización de estilos limpios global (Specs 001 a 005): Reemplazados el 100% de los colores hexadecimales hardcodeados por tokens de `src/constants/theme.ts` (incluyendo estados operativos, `bgBlueBorder`, `primaryDisabled` y `EPMAPS_TYPOGRAPHY.tabularNums`).
+- Pulido anti-slop con `design-taste-frontend` (`references/app-screens.md`): Superficies planas separadas por bordes de 1px sin sombras en reposo, KPIs unificados en un solo contenedor dividido por línea vertical (sin iconos en cajas coloreadas), etiquetas en *Sentence case* sin *eyebrows* en mayúsculas, eliminación de numeración artificial (`1.`–`7.`), y unidades (`m³`, `m³/mes`) desacopladas en gris secundario junto a cifras tabulares.
 - Ver detalles en `specs/002/design.md`, `specs/003/design.md`, `specs/004/design.md` y `specs/005/design.md`.
 
 ## Aprendizajes y errores a evitar

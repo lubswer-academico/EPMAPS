@@ -88,9 +88,12 @@ export default function ReadingDetailScreen() {
             accessibilityRole="button"
             accessibilityLabel="Regresar a la bandeja"
           >
-            <View style={styles.backButtonBadge}>
-              <Ionicons name="arrow-back" size={16} color={EPMAPS_COLORS.primaryDark} />
-            </View>
+            <Ionicons
+              name="arrow-back"
+              size={18}
+              color={EPMAPS_COLORS.primaryDark}
+              style={styles.backButtonIcon}
+            />
             <Text style={styles.backButtonText}>Regresar</Text>
           </TouchableOpacity>
           <View style={styles.errorCard}>
@@ -217,9 +220,12 @@ export default function ReadingDetailScreen() {
             accessibilityRole="button"
             accessibilityLabel="Regresar a la bandeja"
           >
-            <View style={styles.backButtonBadge}>
-              <Ionicons name="arrow-back" size={16} color={EPMAPS_COLORS.primaryDark} />
-            </View>
+            <Ionicons
+              name="arrow-back"
+              size={18}
+              color={EPMAPS_COLORS.primaryDark}
+              style={styles.backButtonIcon}
+            />
             <Text style={styles.backButtonText}>Regresar</Text>
           </TouchableOpacity>
 
@@ -280,9 +286,8 @@ export default function ReadingDetailScreen() {
 
         {/* Tarjeta de Datos de la Lectura */}
         <View style={styles.card}>
-          <Text style={styles.cardCategoryLabel}>FICHA DE REGISTRO • AUDITORÍA</Text>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Información del Registro</Text>
+            <Text style={styles.sectionTitle}>Información del registro</Text>
             <View style={[styles.statusBadge, getStatusBadgeStyle(reading.status)]}>
               <Ionicons
                 name={statusIcon.name}
@@ -297,61 +302,72 @@ export default function ReadingDetailScreen() {
           </View>
 
           <View style={styles.dataRow}>
-            <Text style={styles.dataLabel}>Código de medidor:</Text>
+            <Text style={styles.dataLabel}>Código de medidor</Text>
             <Text style={[styles.dataValue, styles.tabularValue]}>{reading.meterCode}</Text>
           </View>
 
           <View style={styles.dataRow}>
-            <Text style={styles.dataLabel}>Condición física:</Text>
+            <Text style={styles.dataLabel}>Condición física</Text>
             <Text style={styles.dataValue}>{reading.condition}</Text>
           </View>
 
           {reading.inaccessibilityReason ? (
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>Motivo de inaccesibilidad:</Text>
+              <Text style={styles.dataLabel}>Motivo de inaccesibilidad</Text>
               <Text style={styles.dataValue}>{reading.inaccessibilityReason}</Text>
             </View>
           ) : null}
 
           {reading.damageDescription ? (
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>Descripción del daño:</Text>
+              <Text style={styles.dataLabel}>Descripción del daño</Text>
               <Text style={styles.dataValue}>{reading.damageDescription}</Text>
             </View>
           ) : null}
 
           <View style={styles.dataRow}>
-            <Text style={styles.dataLabel}>Lectura actual:</Text>
+            <Text style={styles.dataLabel}>Lectura actual</Text>
             <Text style={[styles.dataValue, styles.tabularValue]}>
-              {reading.currentReading !== null && reading.currentReading !== undefined
-                ? `${reading.currentReading} m³`
-                : 'No aplica'}
+              {reading.currentReading !== null && reading.currentReading !== undefined ? (
+                <>
+                  {reading.currentReading}
+                  <Text style={styles.unitSuffix}> m³</Text>
+                </>
+              ) : (
+                'No aplica'
+              )}
             </Text>
           </View>
 
           {reading.previousReading !== null && reading.previousReading !== undefined ? (
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>Lectura anterior:</Text>
+              <Text style={styles.dataLabel}>Lectura anterior</Text>
               <Text style={[styles.dataValue, styles.tabularValue]}>
-                {reading.previousReading} m³
+                {reading.previousReading}
+                <Text style={styles.unitSuffix}> m³</Text>
               </Text>
             </View>
           ) : null}
 
           <View style={styles.dataRow}>
-            <Text style={styles.dataLabel}>Consumo calculado:</Text>
+            <Text style={styles.dataLabel}>Consumo calculado</Text>
             <Text style={[styles.dataValue, styles.tabularValue]}>
-              {reading.consumption !== null && reading.consumption !== undefined
-                ? `${reading.consumption} m³`
-                : reading.hasNoPreviousData
-                ? 'Pendiente de verificar'
-                : 'No aplica'}
+              {reading.consumption !== null && reading.consumption !== undefined ? (
+                <>
+                  {reading.consumption}
+                  <Text style={styles.unitSuffix}> m³</Text>
+                </>
+              ) : reading.hasNoPreviousData ? (
+                'Pendiente de verificar'
+              ) : (
+                'No aplica'
+              )}
             </Text>
           </View>
 
           {reading.isAnomaly ? (
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>Anomalía de consumo:</Text>
+              <Text style={styles.dataLabel}>Anomalía de consumo</Text>
               <Text style={[styles.dataValue, styles.anomalyText]}>
                 Supera 3x promedio (Confirmada)
               </Text>
@@ -361,20 +377,20 @@ export default function ReadingDetailScreen() {
           <View style={styles.divider} />
 
           <View style={styles.dataRow}>
-            <Text style={styles.dataLabel}>Fecha de captura:</Text>
+            <Text style={styles.dataLabel}>Fecha de captura</Text>
             <Text style={[styles.dataValue, styles.tabularValue]}>{formattedCapturedAt}</Text>
           </View>
 
           {formattedUpdatedAt ? (
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>Última edición:</Text>
+              <Text style={styles.dataLabel}>Última edición</Text>
               <Text style={[styles.dataValue, styles.tabularValue]}>{formattedUpdatedAt}</Text>
             </View>
           ) : null}
 
           {formattedSyncedAt ? (
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>Fecha de envío:</Text>
+              <Text style={styles.dataLabel}>Fecha de envío</Text>
               <Text style={[styles.dataValue, styles.tabularValue]}>{formattedSyncedAt}</Text>
             </View>
           ) : null}
@@ -382,8 +398,7 @@ export default function ReadingDetailScreen() {
 
         {/* Sección de Fotografía */}
         <View style={styles.card}>
-          <Text style={styles.cardCategoryLabel}>EVIDENCIA VISUAL • RESPALDO</Text>
-          <Text style={styles.sectionTitle}>Fotografía Adjunta</Text>
+          <Text style={styles.sectionTitle}>Fotografía adjunta</Text>
           {reading.photoUri ? (
             <View style={styles.photoContainer}>
               <Image source={{ uri: reading.photoUri }} style={styles.photo} />
@@ -465,19 +480,13 @@ const styles = StyleSheet.create({
     marginBottom: EPMAPS_SPACING.xs,
     paddingRight: EPMAPS_SPACING.md,
   },
-  backButtonBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: EPMAPS_RADII.sm,
-    backgroundColor: EPMAPS_COLORS.bgBlue,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: EPMAPS_SPACING.sm,
+  backButtonIcon: {
+    marginRight: 6,
   },
   backButtonText: {
     fontSize: EPMAPS_TYPOGRAPHY.sizes.md,
     color: EPMAPS_COLORS.primaryDark,
-    fontWeight: EPMAPS_TYPOGRAPHY.weights.bold,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.semibold,
   },
   headerTitleRow: {
     flexDirection: 'row',
@@ -661,6 +670,11 @@ const styles = StyleSheet.create({
     fontVariant: EPMAPS_TYPOGRAPHY.tabularNums,
     color: EPMAPS_COLORS.primaryDark,
     fontWeight: EPMAPS_TYPOGRAPHY.weights.extrabold,
+  },
+  unitSuffix: {
+    fontSize: 12,
+    fontWeight: EPMAPS_TYPOGRAPHY.weights.medium,
+    color: EPMAPS_COLORS.textMuted,
   },
   anomalyText: {
     color: EPMAPS_COLORS.attention,
