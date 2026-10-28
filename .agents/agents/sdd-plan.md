@@ -41,7 +41,7 @@ Consulta las skills `sdd-plan`, `docs/constitution.md` y `specs/<id-spec>/decisi
 
 1. **Responsabilidad de Archivos:** Lista de archivos a crear o modificar y su rol concreto.
 2. **Dominio y Lógica Pura:** Funciones deterministas sin dependencias de frameworks, UI ni almacenamiento.
-3. **Persistencia e Interfaces:** Contratos de almacenamiento y serialización tolerante a fallos.
+3. **Persistencia Pragmática (KISS/YAGNI):** Módulos directos de almacenamiento y serialización tolerante a fallos, evitando interfaces abstractas (I...Storage), adaptadores en memoria duplicados o contratos de historias futuras.
 4. **Contrato de Presentación y Estado:** Qué datos expone el motor y qué acciones recibe (hooks/controladores/store), sin diseñar UI final.
 5. **Estrategia de Pruebas Automatizadas:** Mapeo de pruebas unitarias y de integración requisito por requisito.
 6. **Sección Obligatoria `# Decisiones ADR`:**
@@ -71,8 +71,7 @@ Sin cambiar de agente, consulta la skill `sdd-tasks` y genera `specs/<id-spec>/t
        - Requiere: ADR-REQ-XX de plan.md
        - Hecho cuando: <condición verificable exacta>.
      ```
-4. Asigna el método de verificación para cada tarea (pruebas Jest en verde o pruebas de contrato).
-
+4. Asigna el método de verificación para cada tarea (pruebas unitarias en Jest en verde), manteniendo las tareas al mínimo indispensable sin sobreingeniería.
 ### Paso 4: Notificación y Cierre
 - Informa al usuario que `plan.md` y `tasks.md` han sido generados exitosamente.
 - Lista el resumen de las **Decisiones ADR** declaradas que quedan pendientes de resolver por el subagente `/sdd-adr` antes de iniciar la implementación.

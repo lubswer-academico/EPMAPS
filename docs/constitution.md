@@ -17,5 +17,4 @@ Principios innegociables. Toda spec, plan, implementación y diseño debe cumpli
 
 - **Prohibido anticipar requerimientos futuros (YAGNI):** Diseña única y exclusivamente para la historia actual. No crees interfaces, contratos vacíos ni adaptadores de lectura para entidades de historias futuras (ej. no crear colas ni sincronizadores en HU-001 si corresponden a HU-004/005).
 - **Evitar abstracción prematura:** No crees interfaces (`I...Storage`) ni clases adaptadoras en memoria (`Memory...`) a menos que sean estrictamente indispensables para una prueba de Jest. Si una función utilitaria o un hook directo resuelve la necesidad, prefiérelo frente a patrones de diseño complejos.
-- **Minimizar dependencias y boilerplate:** Respeta la restricción del cliente: *"Cada dependencia no justificada resta puntos"*. Prefiere APIs directas y estándar de Expo/React Native.
 - **Enfoque en Dominio Testeable:** La separación de capas se limita a extraer la lógica de cálculo y validación matemática/negocio en funciones puras (`src/domain/`) fáciles de probar con Jest, sin sobrecargar la capa de almacenamiento con patrones empresariales excesivos.

@@ -28,19 +28,19 @@ Genera únicamente `specs/<id-spec>/plan.md` cubriendo:
 3. **Persistencia y Almacenamiento (`src/storage/`):** Métodos concretos y serialización segura tolerante a fallos, evitando patrones de diseño excesivos para operaciones simples.
 4. **Contrato de Presentación y Estado:** Qué datos expone el motor y qué eventos recibe (hooks/controladores), **sin diseñar componentes visuales** (el diseño visual se posterga a la fase de diseño).
 5. **Estrategia de Pruebas Automatizadas:** Casos y cobertura requisito por requisito con Jest.
-6. **Sección Obligatoria `# Decisiones ADR`:**
-   - Lista cada una de las necesidades técnicas que requieren una librería externa, **una por una** (nunca dos necesidades en una sola entrada).
-   - **Regla estricta:** NO inventes ni menciones nombres de librerías comerciales o paquetes `npm` en este archivo.
-   - Describe únicamente qué se quiere resolver, qué necesita que haga la librería y su trazabilidad:
+6. **Sección Obligatoria `# Decisiones ADR` (Cualquier Capacidad Técnica Nueva):**
+   - **Principio Rector:** El objetivo NO es evitar dependencias a toda costa ni elegir APIs nativas en silencio, sino identificar qué capacidades técnicas nuevas requiere la historia y evaluar con qué resolverlas mediante un ADR formal.
+   - **Prohibido pre-decidir APIs nativas o librerías:** Si una historia requiere por primera vez una capacidad técnica (ej. cliente HTTP para consultar un servidor, plataforma mock de backend, captura de cámara, geolocalización, subida de archivos), **ESTÁ PROHIBIDO** decidir en `plan.md` que se usará `fetch` nativo, catálogos en memoria o cualquier herramienta específica si no existe ya un archivo `docs/adr/ADR-XXX.md` que avale esa decisión.
+   - **Obligación:** Toda capacidad técnica nueva no cubierta por los ADRs existentes en `docs/adr/` DEBE declararse como un `ADR-REQ-XX` agnóstico (sin mencionar nombres como `fetch`, `Axios`, `MockAPI`, etc.):
      ```markdown
      # Decisiones ADR
 
      ### ADR-REQ-01: [Nombre descriptivo de la necesidad técnica]
-     - Problema a resolver: [Qué necesidad del sistema se debe cubrir].
-     - Capacidades requeridas: [Qué funciones o rendimiento debe aportar la librería].
+     - Problema a resolver: [Qué necesidad de comunicación, hardware o infraestructura se debe cubrir].
+     - Capacidades requeridas: [Qué funciones, manejo de timeouts, errores o persistencia debe ofrecer la solución elegida, sea nativa o librería externa].
      - Requisitos trazados: RF-x, RF-y; RNF-z.
      ```
-   - **Regla de Aprobación:** El plan **NO** se considera aprobado si las Decisiones ADR no han sido resueltas formalmente por el evaluador de dependencias. Deja explícita la nota:
+   - **Regla de Aprobación:** Mientras exista al menos un `ADR-REQ-XX` no resuelto en `docs/adr/`, el estado del plan DEBE ser:
      > `*Estado del Plan: Pendiente de resolución de Decisiones ADR antes de iniciar la implementación.*`
 7. **Trazabilidad hacia `tasks.md`:**
    - Toda tarea que involucre una librería pendiente de definir debe incluir el vínculo: `Requiere: ADR-REQ-XX de plan.md`.
