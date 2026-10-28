@@ -143,6 +143,9 @@ Framework de pruebas: Jest con TypeScript (`jest-expo`), ejecutado con `npx jest
 - **Problema a resolver:** Permitir al técnico de campo capturar evidencia fotográfica nítida del medidor de agua (estado físico del visor o avería) directamente desde la pantalla de captura del terminal móvil en condiciones de campo (RF-10, RF-11, RF-12; RNF-1, RNF-4).
 - **Capacidades requeridas:** Interfaz para solicitar y verificar permisos nativos de cámara en tiempo de ejecución (iOS/Android); invocación modal o visor de cámara para captura de fotografía; soporte para seleccionar resolución balanceada sin saturar la memoria del terminal; retorno de referencia unívoca a la imagen capturada en almacenamiento local temporal; manejo de cancelación voluntaria del usuario y retroalimentación clara ante permisos denegados.
 - **Requisitos trazados:** RF-10, RF-11, RF-12; RNF-1, RNF-4.
+- **Se va a utilizar:** `expo-image-picker` mediante el servicio `src/services/photo/cameraService.ts`.
+- **Trazabilidad:** Resuelto en docs/adr/ADR-005-expo-image-picker-camara.md.
+- **Comando de instalación:** `npx expo install expo-image-picker`
 
 ---
 
