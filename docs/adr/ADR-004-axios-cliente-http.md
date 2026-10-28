@@ -33,3 +33,4 @@ Se decide adoptar **`axios`** como el cliente HTTP oficial para la comunicación
 
 ## Uso de IA
 La IA sugirio fetch cómo primera opcion, sin embargo esta misma necesit de hacer una conversion de Json, además de validar codigos de respuesta en la solicitud, lo cual hacia que el codigo fuera mas verboso y propenso a errores. Axios por su parte menciono que es una libreria pesada y que para un get es algo inecesario, visto de esa forma fetch tiene las de  ganar sin embargo, el proyecto contempla mas solicitudes que solo un Get, entonces axios resulta mejor opcion por temas de alcance del proyecto 
+

@@ -2,20 +2,18 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas.
 
 ## Estado actual
-- Fase: Decisiones ADR (`sdd-adr`) de Spec 002 culminada con éxito.
-- Documento generado: [docs/adr/ADR-004-axios-cliente-http.md](file:///C:/Users/usuario/Desktop/Movil/prueba1/EPMAPS/docs/adr/ADR-004-axios-cliente-http.md).
-- [plan.md](file:///C:/Users/usuario/Desktop/Movil/prueba1/EPMAPS/specs/002/plan.md) pasa a `Estado del Plan: Aprobado`.
-- [tasks.md](file:///C:/Users/usuario/Desktop/Movil/prueba1/EPMAPS/specs/002/tasks.md) listo con 5 tareas atómicas trazadas.
+- Fase: Planificación Técnica y Tareas de Spec 003 (`sdd-plan`) COMPLETADA.
+- Artefactos: [specs/003/plan.md](file:///C:/Users/usuario/Desktop/Movil/prueba1/EPMAPS/specs/003/plan.md) y [specs/003/tasks.md](file:///C:/Users/usuario/Desktop/Movil/prueba1/EPMAPS/specs/003/tasks.md) generados.
+- Suite automatizada base: 43/43 pruebas unitarias pasando en verde (`npx jest`) y chequeo de tipos limpio (`npx tsc --noEmit`).
 
 ## Decisiones (y por qué)
 - Spec 001: AsyncStorage (ADR-001), NetInfo (ADR-002) y Jest-Expo (ADR-003).
-- Spec 002 (ADR-004): `axios` como cliente HTTP oficial para consultas GET y futura sincronización transaccional POST/PUT de lecturas en campo.
-- Spec 002 (D1-D4): Formato `MED-XXXXXX`, caché 24h, degradación elegante sin señal y bloqueo estricto R10.
+- Spec 002 (ADR-004): `axios` como cliente HTTP oficial para consultas GET y sincronización futura.
+- Spec 003: Arquitectura modular directa (`src/domain/reading/`, `src/storage/reading/`, `src/services/photo/`, `src/presentation/reading/`). Persistencia de borradores en caliente con AsyncStorage. Declaradas 2 necesidades ADR agnósticas (ADR-REQ-01 y ADR-REQ-02) pendientes de resolución técnica.
 
 ## Aprendizajes y errores a evitar
-- Instalar `@react-native/jest-preset@0.86.3` para paridad con react-native 0.86.3 y jest-expo en Expo 57.
-- Recordar al usuario completar la sección `## Uso de IA` en cada ADR para su defensa técnica.
-- Mantener diseño en obra blanca funcional sin sobrecargar estilos hasta tener el flujo completo.
+- Respetar el blindaje de fronteras: edición de cola en HU-004; sincronización masiva y subida externa de fotos en HU-005.
+- Punto 6 de sdd-plan: Nunca nombrar librerías npm antes de resolver el ADR formal. Dejar el plan en estado pendiente de resolución ADR.
 
 ## Próximos pasos
-- Solicitar autorización de instalación de `axios` y ejecutar `/sdd-implement 002` (subagente `sdd-implement`) para implementar las tareas T1 a T5 bajo TDD estricto en obra blanca.
+- Ejecutar el subagente `/sdd-adr 003` para debatir y resolver formalmente ADR-REQ-01 (cámara) y ADR-REQ-02 (archivos de imagen locales).

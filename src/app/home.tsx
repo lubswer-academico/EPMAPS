@@ -37,6 +37,15 @@ export default function HomeScreen() {
 
         <View style={styles.actionContainer}>
           <TouchableOpacity
+            style={styles.searchMeterButton}
+            onPress={() => router.push('/meter-search')}
+            accessibilityRole="button"
+            accessibilityLabel="Buscar Medidor"
+          >
+            <Text style={styles.searchMeterButtonText}>🔍 Buscar Medidor</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={styles.logoutButton}
             onPress={handleLogout}
             accessibilityRole="button"
@@ -90,6 +99,20 @@ const styles = StyleSheet.create({
   actionContainer: {
     marginTop: 24,
     marginBottom: 16,
+  },
+  searchMeterButton: {
+    minHeight: 48,
+    backgroundColor: '#0D47A1',
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  searchMeterButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   logoutButton: {
     minHeight: 48,
